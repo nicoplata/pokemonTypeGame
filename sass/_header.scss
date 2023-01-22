@@ -1,0 +1,21 @@
+header {
+    margin-top: 45px;
+    grid-area: head;
+    display: flex; 
+    flex-direction: row;
+    align-items: center;
+    justify-items: flex-start;
+    background-color: #ffffff;
+
+    img{
+        width: 250px;
+        padding: 0px 50px;
+    }
+
+    p {
+        color: rgb(0, 0, 0);
+        font-size: 30px;
+        text-align: center;
+        font-family: 'Press Start 2P', cursive;
+    }
+}

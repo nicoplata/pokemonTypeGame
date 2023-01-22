@@ -1,0 +1,26 @@
+nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: flex-start;
+
+    #container{
+        margin: 30px;
+        padding: 30px;
+        grid-area: nav;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: #e2e2e2;
+        border: solid lightgray 2pt;
+        border-radius: 20pt;
+
+        #title {
+            padding-bottom: 20px;   
+        }
+
+        .pokemon{
+            cursor: pointer;
+        }
+    }
+}

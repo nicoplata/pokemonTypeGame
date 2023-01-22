@@ -1,0 +1,16 @@
+body {
+    padding: 0;
+    margin: 0;
+}
+
+#page {
+    display: grid;
+    width: 100%;
+    height: auto;
+    grid-template-areas:
+      "head head"
+      "nav  main"
+      ;
+    grid-template-columns: 20em;
+    font-family: 'Press Start 2P', cursive;
+}

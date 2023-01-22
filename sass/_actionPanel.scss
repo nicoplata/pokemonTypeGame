@@ -1,0 +1,95 @@
+#actionPanel {
+    height: 450px;
+
+    #chat {
+        width: 100%;
+
+        .chatArea {
+            margin-bottom: 30px;
+        }
+        
+        #profesorOak {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: flex-start;
+        
+            img {
+                height: 100px;
+                margin-right: 20px;
+            }
+        
+            #textAreaOak {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                width: 400px;
+                height: 220px;
+
+                #chatOak {
+                    width: 400px;
+                    height: 100%;
+                    line-height: 30px;
+                }
+            }
+        }
+
+        #trainerChat {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: flex-end;
+
+            #textAreaAsh {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                width: 300px;
+                height: 100%;
+
+                p {
+                    text-align: end;
+                    margin: 10px;
+                }
+
+                #chatAsh {
+                    width: 300px;
+                    height: 100%;
+
+                    #nameInput {
+                        width: 250px;
+                        height: 50px;
+                        background-color: #e2e2e2;
+                        border: solid lightgray 2pt;
+                        font-family: 'Press Start 2P', cursive;
+                    }
+                }
+            }
+
+            img {
+                width: 100px;
+                margin-left: 20px;
+            }
+        }
+    }
+
+    #answers {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+
+        button {
+            width: 150px;
+            height: 75px;
+            background-color: white;
+            border-radius: 10px;
+            border: solid lightgray 2pt;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+
+            img {
+                width: 50px;
+            }
+        }
+    }
+}

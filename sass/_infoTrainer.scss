@@ -1,0 +1,23 @@
+#trainerCard{
+    height: 150px;
+
+    #trainerData{
+        margin: 10px;
+        display: flex;
+        flex-direction: row;
+        gap: 100px;
+
+        #dataId{
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #dataValue{
+            display: flex;
+            flex-direction: column;
+        }
+    }
+}
+
+
+

@@ -1,0 +1,20 @@
+main {
+    grid-area: main;
+    background-color: white;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+
+    .card {
+        width: 500px;
+        margin: 30px;
+        padding: 30px;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-items: center;
+        border: solid lightgray 2pt;
+        border-radius: 20pt;
+    }
+}

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./styles/styles.css">
+    <link rel="stylesheet" href="sweetalert2.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <title>Pokemon Type Game</title>
+</head>
+<body>
+    <section id="page">
+        <header>
+            <img src="./img/pokemonLogo.png" alt="pokemonLogo">
+            <p>POKéDEX</p>
+        </header>
+        <nav>
+            <div id="container">
+                <p id="title">POKéMON</p>
+                <p onclick="pokemonSelector('bulbasaur')" class="pokemon" id="bulbasaur">BULBASAUR</p>
+                <p onclick="pokemonSelector('charmander')" class="pokemon" id="charmander">CHARMANDER</p>
+                <p onclick="pokemonSelector('squirtle')" class="pokemon" id="squirtle">SQUIRTLE</p>
+                <p onclick="pokemonSelector('chikorita')" class="pokemon" id="chikorita">CHIKORITA</p>
+                <p onclick="pokemonSelector('cyndaquil')" class="pokemon" id="cyndaquil">CYNDAQUIL</p>
+                <p onclick="pokemonSelector('totodile')" class="pokemon" id="totodile">TOTODILE</p>
+            </div>
+        </nav>
+        <main>
+            <div id="containerColumn">
+                <div class="card" id="trainerCard">
+                    <p>ENTRENADOR</p>
+                    <div id="trainerData">
+                        <div id="dataId">
+                            <div><p id="nameId">NOMBRE</p></div>
+                            <div><p id="pokemonId">POKéMON</p></div>
+                        </div>
+                        <div id="dataValue">
+                            <div><p id="trainerName"></p></div>
+                            <div><p id="trainerPokemon"></p></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" id="actionPanel">
+                    <div id="chat">
+                        <div class="chatArea" id="profesorOak">
+                            <img src="./img/profesorOak.png" alt="">
+                            <div id="textAreaOak">
+                                <p>PROFESOR</p>
+                                <P id="chatOak"></P>
+                            </div>
+                        </div>
+                        <div class="chatArea" id="trainerChat">
+                            <div id="textAreaAsh">
+                                <p>ENTRENADOR</p>
+                                <p id="chatAsh">
+                                </p>
+                            </div>
+                            <img src="./img/ashKetchum.png" alt="">
+                        </div>
+                    </div>
+                    <div id="answers">
+                        <button id="optionOne"><img id="optionOneImg" src="" alt=""></button>
+                        <button id="optionTwo"><img id="optionTwoImg" src="" alt=""></button>
+                        <button id="optionThree"><img id="optionThreeImg" src="./img/arrowRight.png" alt=""></img>
+                    </div>
+                </div>
+            </div>
+            <div class="pokemonContainer">
+                <div class="card" id="pokedex">
+                    <p id="titleCard">-</p>
+                    <div class="infoContainer">
+                        <div id="imageCard"><img id="image" src="" alt=""></div>
+                        <div id="stats">
+                            <div id="statsId">
+                                <div><p id="healthId">SALUD</p></div>
+                                <div><p id="damageId">DAÑO</p></div>
+                                <div><p id="typeId">TIPO</p></div>
+                            </div>
+                            <div id="statsValue">
+                                <div><p id="healthValue">-</p></div>
+                                <div><p id="damageValue">-</p></div>
+                                <div><p id="typeValue">-</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card" id="pokedex">
+                    <p id="titleCardRival">-</p>
+                    <div class="infoContainer">
+                        <div id="imageCard"><img id="imageRival" src="" alt=""></div>
+                        <div id="stats">
+                            <div id="statsId">
+                                <div><p id="healthId">SALUD</p></div>
+                                <div><p id="damageId">DAÑO</p></div>
+                                <div><p id="typeId">TIPO</p></div>
+                            </div>
+                            <div id="statsValue">
+                                <div><p id="healthValueRival">-</p></div>
+                                <div><p id="damageValueRival">-</p></div>
+                                <div><p id="typeValueRival">-</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>    
+        </main>
+    </section>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="./js/index.js"></script>
+</body>
+</html>

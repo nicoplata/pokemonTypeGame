@@ -1,0 +1,72 @@
+{
+    "text": [
+        {
+            "textId": 0,
+            "text": "¡Bienvenido a mi laboratorio!"
+        },
+        {
+            "textId": 1,
+            "text": "¿Cómo te llamas?"
+        },
+        {
+            "textId": 2,
+            "text": "Gusto en conocerte!"
+        },
+        {
+            "textId": 3,
+            "text": "Para iniciar tu camino como maestro pokémon deberás elegir tu primer pokémon..."
+        },
+        {
+            "textId": 4,
+            "text": "Esta decisión no debe tomarse a la ligera ya que te acompañará hasta convertirte en maestro pokémon..."
+        },
+        {
+            "textId": 5,
+            "text": "¿Qué pokémon elijes? ¿BULBASAUR, CHARMANDER o SQUIRTLE?"
+        },
+        {
+            "textId": 6,
+            "text": "Excelente elección!"
+        },
+        {
+            "textId": 7,
+            "text": "¿Estás listo?"
+        },
+        {
+            "textId": 8,
+            "text": "¿Qué te parece poner a tu pokemon en acción?"
+        },
+        {
+            "textId": 9,
+            "text": "Un poco de entrenamiento le sentará de maravilla, elije a tu enemigo"
+        },
+        {
+            "textId": 10,
+            "text": "¿Contra qué pokémon deseas combatir? ¿CHIKORITA, CYNDAQUIL o TOTODILE?"
+        },
+        {
+            "textId": 11,
+            "text": "¿Cuál será tu primer ataque?"
+        },
+        {
+            "textId": 12,
+            "text": ""
+        },
+        {
+            "textId": 13,
+            "text": "El pokemon enemigo ha atacado!"
+        },
+        {
+            "textId": 14,
+            "text": ""
+        },
+        {
+            "textId": 15,
+            "text": "¿Cuál será su siguiente ataque?"
+        },
+        {
+            "textId": 17,
+            "text": "Tu pokémon ha perdido!"
+        }    
+    ]
+}
