@@ -1,214 +1,466 @@
-@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
-  padding: 0;
   margin: 0;
+  padding: 0;
+  background-color: #ffffff;
+  color: #111111;
+  font-family: "Press Start 2P", monospace;
+  font-size: 14px;
+}
+
+h1,
+h2,
+p,
+dl,
+dd,
+ul {
+  margin: 0;
+}
+
+h2 {
+  font-size: 16px;
+  font-weight: normal;
+}
+
+button {
+  font-family: "Press Start 2P", monospace;
+  color: #111111;
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid #cc0000;
+  outline-offset: 2px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 #page {
   display: grid;
   width: 100%;
-  height: auto;
   grid-template-areas: "head head" "nav  main";
-  grid-template-columns: 20em;
-  font-family: "Press Start 2P", cursive;
+  grid-template-columns: 18em 1fr;
+}
+@media (max-width: 760px) {
+  #page {
+    grid-template-areas: "head" "nav" "main";
+    grid-template-columns: 1fr;
+  }
 }
 
 header {
-  margin-top: 45px;
   grid-area: head;
+  margin-top: 45px;
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-items: flex-start;
-  background-color: #ffffff;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 0 50px;
 }
 header img {
   width: 250px;
-  padding: 0px 50px;
+  max-width: 60vw;
+  height: auto;
 }
-header p {
-  color: rgb(0, 0, 0);
+header h1 {
   font-size: 30px;
-  text-align: center;
-  font-family: "Press Start 2P", cursive;
+  font-weight: normal;
+}
+@media (max-width: 760px) {
+  header {
+    margin-top: 20px;
+    padding: 0 16px;
+    justify-content: center;
+  }
+  header h1 {
+    font-size: 20px;
+  }
 }
 
 nav {
+  grid-area: nav;
   display: flex;
-  flex-direction: row;
   justify-content: flex-end;
   align-items: flex-start;
 }
-nav #container {
-  margin: 30px;
+nav #pokedexList {
+  margin: 20px;
   padding: 30px;
-  grid-area: nav;
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: #e2e2e2;
-  border: solid lightgray 2pt;
-  border-radius: 20pt;
+  border: 2px solid lightgray;
+  border-radius: 20px;
 }
-nav #container #title {
-  padding-bottom: 20px;
+nav .listTitle {
+  padding-bottom: 12px;
 }
-nav #container .pokemon {
+nav .listHint {
+  font-size: 8px;
+  line-height: 14px;
+  text-align: center;
+  padding-bottom: 16px;
+}
+nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+nav .pokemonLink {
+  width: 100%;
+  padding: 6px 8px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
   cursor: pointer;
+}
+nav .pokemonLink:hover:not(:disabled) {
+  background-color: #ffffff;
+}
+nav .pokemonLink:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+@media (max-width: 760px) {
+  nav {
+    justify-content: center;
+  }
+  nav #pokedexList {
+    margin: 16px;
+    padding: 16px;
+    width: calc(100% - 32px);
+  }
+  nav ul {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  nav .pokemonLink {
+    width: auto;
+    font-size: 10px;
+  }
 }
 
 main {
   grid-area: main;
-  background-color: white;
   display: flex;
   flex-direction: row;
-  justify-content: flex-start;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  min-width: 0;
+}
+main .column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
 }
 main .card {
-  width: 500px;
-  margin: 30px;
+  width: 440px;
+  max-width: calc(100% - 40px);
+  margin: 20px;
   padding: 30px;
-  background-color: white;
+  background-color: #ffffff;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-items: center;
-  border: solid lightgray 2pt;
-  border-radius: 20pt;
+  border: 2px solid lightgray;
+  border-radius: 20px;
+}
+main .cardTitle {
+  padding-bottom: 16px;
+}
+main .dataList {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 40px;
+  row-gap: 14px;
+}
+main .dataList div {
+  display: contents;
+}
+main .dataList dd {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  main {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  main .card {
+    width: auto;
+    max-width: none;
+    margin: 16px;
+    padding: 20px 16px;
+  }
 }
 
-#trainerCard {
-  height: 150px;
-}
-#trainerCard #trainerData {
+#trainerCard .dataList {
   margin: 10px;
-  display: flex;
-  flex-direction: row;
-  gap: 100px;
-}
-#trainerCard #trainerData #dataId {
-  display: flex;
-  flex-direction: column;
-}
-#trainerCard #trainerData #dataValue {
-  display: flex;
-  flex-direction: column;
 }
 
 #actionPanel {
-  height: 450px;
+  min-height: 450px;
+  justify-content: space-between;
 }
 #actionPanel #chat {
   width: 100%;
 }
-#actionPanel #chat .chatArea {
+#actionPanel .chatArea {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
   margin-bottom: 30px;
 }
-#actionPanel #chat #profesorOak {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  justify-content: flex-start;
-}
-#actionPanel #chat #profesorOak img {
+#actionPanel .chatArea > img {
+  width: 100px;
   height: 100px;
+  flex-shrink: 0;
+}
+#actionPanel .bubble {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 12px;
+}
+#actionPanel .speaker {
+  font-size: 12px;
+  color: #cc0000;
+}
+#actionPanel #oakChat > img {
   margin-right: 20px;
 }
-#actionPanel #chat #profesorOak #textAreaOak {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: 400px;
-  height: 220px;
+#actionPanel #oakChat .bubble {
+  cursor: pointer;
 }
-#actionPanel #chat #profesorOak #textAreaOak #chatOak {
-  width: 400px;
-  height: 100%;
-  line-height: 30px;
+#actionPanel #oakChat #chatOak {
+  min-height: 150px;
+  line-height: 26px;
 }
-#actionPanel #chat #trainerChat {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
+#actionPanel #trainerChat {
   justify-content: flex-end;
 }
-#actionPanel #chat #trainerChat #textAreaAsh {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  width: 300px;
-  height: 100%;
-}
-#actionPanel #chat #trainerChat #textAreaAsh p {
-  text-align: end;
-  margin: 10px;
-}
-#actionPanel #chat #trainerChat #textAreaAsh #chatAsh {
-  width: 300px;
-  height: 100%;
-}
-#actionPanel #chat #trainerChat #textAreaAsh #chatAsh #nameInput {
-  width: 250px;
-  height: 50px;
-  background-color: #e2e2e2;
-  border: solid lightgray 2pt;
-  font-family: "Press Start 2P", cursive;
-}
-#actionPanel #chat #trainerChat img {
-  width: 100px;
+#actionPanel #trainerChat > img {
   margin-left: 20px;
 }
+#actionPanel #trainerChat .bubble {
+  align-items: flex-end;
+  text-align: end;
+}
+#actionPanel #trainerChat #chatTrainer p {
+  line-height: 22px;
+}
+#actionPanel #nameInput {
+  width: 100%;
+  max-width: 250px;
+  height: 50px;
+  padding: 0 10px;
+  background-color: #e2e2e2;
+  border: 2px solid lightgray;
+  font-family: "Press Start 2P", monospace;
+  font-size: 14px;
+  text-transform: uppercase;
+}
 #actionPanel #answers {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-}
-#actionPanel #answers button {
-  width: 150px;
-  height: 75px;
-  background-color: white;
-  border-radius: 10px;
-  border: solid lightgray 2pt;
-  cursor: pointer;
-  font-family: "Press Start 2P", cursive;
-}
-#actionPanel #answers button img {
-  width: 50px;
-}
-
-#pokedex {
-  height: 300px;
-}
-#pokedex #titleCard {
-  padding-bottom: 10px;
-}
-#pokedex .infoContainer {
+  min-height: 75px;
   width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: space-evenly;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
 }
-#pokedex .infoContainer #imageCard {
-  height: 50px;
+#actionPanel .option {
+  width: 140px;
+  min-height: 75px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: #ffffff;
+  border: 2px solid lightgray;
+  border-radius: 10px;
+  cursor: pointer;
 }
-#pokedex .infoContainer #imageCard img {
-  max-width: 200px;
+#actionPanel .option:hover:not(:disabled) {
+  border-color: #111111;
 }
-#pokedex .infoContainer #stats {
-  height: 100px;
-  padding-top: 50px;
+#actionPanel .option:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+#actionPanel .option img {
+  width: 50px;
+  height: auto;
+}
+#actionPanel .optionText {
+  font-size: 10px;
+}
+#actionPanel .optionDetail {
+  font-size: 8px;
+  color: #555555;
+}
+@media (max-width: 760px) {
+  #actionPanel {
+    min-height: 0;
+  }
+  #actionPanel .chatArea > img {
+    width: 60px;
+    height: 60px;
+  }
+  #actionPanel #oakChat > img {
+    margin-right: 12px;
+  }
+  #actionPanel #trainerChat > img {
+    margin-left: 12px;
+  }
+  #actionPanel #oakChat #chatOak {
+    min-height: 120px;
+    font-size: 12px;
+    line-height: 22px;
+  }
+  #actionPanel .option {
+    width: calc(33% - 7px);
+    min-width: 90px;
+  }
+}
+
+.pokemonCard {
+  min-height: 300px;
+}
+.pokemonCard .healthBar {
+  width: 100%;
+  height: 10px;
+  margin-bottom: 20px;
+  background-color: #e2e2e2;
+  border: 2px solid lightgray;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.pokemonCard .healthFill {
+  width: 0%;
+  height: 100%;
+  background-color: #3bb54a;
+  transition: width 0.6s ease, background-color 0.6s ease;
+}
+.pokemonCard .healthFill.medio {
+  background-color: #f2c12e;
+}
+.pokemonCard .healthFill.bajo {
+  background-color: #e03c31;
+}
+.pokemonCard .infoContainer {
+  width: 100%;
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  gap: 50px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 20px;
 }
-#pokedex .infoContainer #stats #statsId {
+.pokemonCard .imageCard {
+  width: 150px;
+  height: 150px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
 }
-#pokedex .infoContainer #stats #statsValue {
+.pokemonCard .imageCard img {
+  max-width: 100%;
+  max-height: 100%;
+}
+.pokemonCard .golpe {
+  animation: golpe 0.45s ease;
+}
+
+@keyframes golpe {
+  0%, 100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  20% {
+    transform: translateX(-10px);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateX(10px);
+    opacity: 1;
+  }
+  60% {
+    transform: translateX(-6px);
+    opacity: 0.4;
+  }
+  80% {
+    transform: translateX(6px);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pokemonCard .healthFill {
+    transition: none;
+  }
+}
+#modal {
+  width: min(420px, 100% - 32px);
+  padding: 30px;
+  border: 2px solid lightgray;
+  border-radius: 20px;
+  text-align: center;
+  font-family: "Press Start 2P", monospace;
+  color: #111111;
+}
+#modal::backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+#modal #modalIcon {
+  font-size: 40px;
+  color: #cc0000;
+  margin-bottom: 16px;
+}
+#modal #modalTitle {
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+#modal #modalText {
+  line-height: 22px;
+  margin-bottom: 24px;
+}
+#modal #modalButtons {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}/*# sourceMappingURL=styles.css.map */
+  justify-content: center;
+  gap: 16px;
+}
+#modal #modalButtons button {
+  min-width: 100px;
+  padding: 14px 16px;
+  background-color: #ffffff;
+  border: 2px solid lightgray;
+  border-radius: 10px;
+  cursor: pointer;
+}
+#modal #modalButtons button:hover {
+  border-color: #111111;
+}

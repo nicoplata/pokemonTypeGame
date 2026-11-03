@@ -1,21 +1,33 @@
+@use 'variables' as *;
+
 header {
-    margin-top: 45px;
     grid-area: head;
-    display: flex; 
+    margin-top: 45px;
+    display: flex;
     flex-direction: row;
     align-items: center;
-    justify-items: flex-start;
-    background-color: #ffffff;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 0 50px;
 
-    img{
+    img {
         width: 250px;
-        padding: 0px 50px;
+        max-width: 60vw;
+        height: auto;
     }
 
-    p {
-        color: rgb(0, 0, 0);
+    h1 {
         font-size: 30px;
-        text-align: center;
-        font-family: 'Press Start 2P', cursive;
+        font-weight: normal;
+    }
+
+    @media (max-width: $movil) {
+        margin-top: 20px;
+        padding: 0 16px;
+        justify-content: center;
+
+        h1 {
+            font-size: 20px;
+        }
     }
 }

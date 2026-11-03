@@ -1,0 +1,50 @@
+@use 'variables' as *;
+
+#modal {
+    width: min(420px, calc(100% - 32px));
+    padding: 30px;
+    border: 2px solid $borde;
+    border-radius: $radio;
+    text-align: center;
+    font-family: $fuente;
+    color: $texto;
+
+    &::backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    #modalIcon {
+        font-size: 40px;
+        color: $acento;
+        margin-bottom: 16px;
+    }
+
+    #modalTitle {
+        font-size: 20px;
+        margin-bottom: 16px;
+    }
+
+    #modalText {
+        line-height: 22px;
+        margin-bottom: 24px;
+    }
+
+    #modalButtons {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+
+        button {
+            min-width: 100px;
+            padding: 14px 16px;
+            background-color: #ffffff;
+            border: 2px solid $borde;
+            border-radius: 10px;
+            cursor: pointer;
+
+            &:hover {
+                border-color: $texto;
+            }
+        }
+    }
+}

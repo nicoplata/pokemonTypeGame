@@ -1,95 +1,156 @@
+@use 'variables' as *;
+
 #actionPanel {
-    height: 450px;
+    min-height: 450px;
+    justify-content: space-between;
 
     #chat {
         width: 100%;
+    }
 
-        .chatArea {
-            margin-bottom: 30px;
-        }
-        
-        #profesorOak {
-            display: flex;
-            flex-direction: row;
-            align-items: flex-start;
-            justify-content: flex-start;
-        
-            img {
-                height: 100px;
-                margin-right: 20px;
-            }
-        
-            #textAreaOak {
-                display: flex;
-                flex-direction: column;
-                align-items: flex-start;
-                width: 400px;
-                height: 220px;
+    .chatArea {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        margin-bottom: 30px;
 
-                #chatOak {
-                    width: 400px;
-                    height: 100%;
-                    line-height: 30px;
-                }
-            }
-        }
-
-        #trainerChat {
-            display: flex;
-            flex-direction: row;
-            align-items: flex-start;
-            justify-content: flex-end;
-
-            #textAreaAsh {
-                display: flex;
-                flex-direction: column;
-                align-items: flex-end;
-                width: 300px;
-                height: 100%;
-
-                p {
-                    text-align: end;
-                    margin: 10px;
-                }
-
-                #chatAsh {
-                    width: 300px;
-                    height: 100%;
-
-                    #nameInput {
-                        width: 250px;
-                        height: 50px;
-                        background-color: #e2e2e2;
-                        border: solid lightgray 2pt;
-                        font-family: 'Press Start 2P', cursive;
-                    }
-                }
-            }
-
-            img {
-                width: 100px;
-                margin-left: 20px;
-            }
+        > img {
+            width: 100px;
+            height: 100px;
+            flex-shrink: 0;
         }
     }
 
+    .bubble {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 0;
+        gap: 12px;
+    }
+
+    .speaker {
+        font-size: 12px;
+        color: $acento;
+    }
+
+    #oakChat {
+        > img {
+            margin-right: 20px;
+        }
+
+        .bubble {
+            cursor: pointer;
+        }
+
+        #chatOak {
+            min-height: 150px;
+            line-height: 26px;
+        }
+    }
+
+    #trainerChat {
+        justify-content: flex-end;
+
+        > img {
+            margin-left: 20px;
+        }
+
+        .bubble {
+            align-items: flex-end;
+            text-align: end;
+        }
+
+        #chatTrainer p {
+            line-height: 22px;
+        }
+    }
+
+    #nameInput {
+        width: 100%;
+        max-width: 250px;
+        height: 50px;
+        padding: 0 10px;
+        background-color: $fondo-suave;
+        border: 2px solid $borde;
+        font-family: $fuente;
+        font-size: 14px;
+        text-transform: uppercase;
+    }
+
     #answers {
+        min-height: 75px;
+        width: 100%;
         display: flex;
         flex-direction: row;
+        flex-wrap: wrap;
         justify-content: center;
+        gap: 10px;
+    }
 
-        button {
-            width: 150px;
-            height: 75px;
-            background-color: white;
-            border-radius: 10px;
-            border: solid lightgray 2pt;
-            cursor: pointer;
-            font-family: 'Press Start 2P', cursive;
+    .option {
+        width: 140px;
+        min-height: 75px;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        background-color: #ffffff;
+        border: 2px solid $borde;
+        border-radius: 10px;
+        cursor: pointer;
 
-            img {
-                width: 50px;
-            }
+        &:hover:not(:disabled) {
+            border-color: $texto;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.45;
+        }
+
+        img {
+            width: 50px;
+            height: auto;
+        }
+    }
+
+    .optionText {
+        font-size: 10px;
+    }
+
+    .optionDetail {
+        font-size: 8px;
+        color: #555555;
+    }
+
+    @media (max-width: $movil) {
+        min-height: 0;
+
+        .chatArea > img {
+            width: 60px;
+            height: 60px;
+        }
+
+        #oakChat > img {
+            margin-right: 12px;
+        }
+
+        #trainerChat > img {
+            margin-left: 12px;
+        }
+
+        #oakChat #chatOak {
+            min-height: 120px;
+            font-size: 12px;
+            line-height: 22px;
+        }
+
+        .option {
+            width: calc(33% - 7px);
+            min-width: 90px;
         }
     }
 }

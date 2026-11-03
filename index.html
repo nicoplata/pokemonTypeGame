@@ -1,114 +1,110 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./styles/styles.css">
-    <link rel="stylesheet" href="sweetalert2.min.css">
+    <meta name="description" content="Juego de combate por turnos con Pokémon y tabla de tipos, usando datos de PokéAPI.">
+    <title>Pokémon Type Game</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <title>Pokemon Type Game</title>
+    <link rel="stylesheet" href="./styles/styles.css">
 </head>
 <body>
-    <section id="page">
+    <div id="page">
         <header>
-            <img src="./img/pokemonLogo.png" alt="pokemonLogo">
-            <p>POKéDEX</p>
+            <img src="./img/pokemonLogo.png" alt="Logo de Pokémon">
+            <h1>POKéDEX</h1>
         </header>
-        <nav>
-            <div id="container">
-                <p id="title">POKéMON</p>
-                <p onclick="pokemonSelector('bulbasaur')" class="pokemon" id="bulbasaur">BULBASAUR</p>
-                <p onclick="pokemonSelector('charmander')" class="pokemon" id="charmander">CHARMANDER</p>
-                <p onclick="pokemonSelector('squirtle')" class="pokemon" id="squirtle">SQUIRTLE</p>
-                <p onclick="pokemonSelector('chikorita')" class="pokemon" id="chikorita">CHIKORITA</p>
-                <p onclick="pokemonSelector('cyndaquil')" class="pokemon" id="cyndaquil">CYNDAQUIL</p>
-                <p onclick="pokemonSelector('totodile')" class="pokemon" id="totodile">TOTODILE</p>
+
+        <nav aria-label="Pokédex">
+            <div id="pokedexList">
+                <h2 class="listTitle">POKéMON</h2>
+                <p class="listHint" id="listHint">Tocá uno para ver sus datos</p>
+                <ul>
+                    <li><button type="button" class="pokemonLink" data-pokemon="bulbasaur">BULBASAUR</button></li>
+                    <li><button type="button" class="pokemonLink" data-pokemon="charmander">CHARMANDER</button></li>
+                    <li><button type="button" class="pokemonLink" data-pokemon="squirtle">SQUIRTLE</button></li>
+                    <li><button type="button" class="pokemonLink" data-pokemon="chikorita">CHIKORITA</button></li>
+                    <li><button type="button" class="pokemonLink" data-pokemon="cyndaquil">CYNDAQUIL</button></li>
+                    <li><button type="button" class="pokemonLink" data-pokemon="totodile">TOTODILE</button></li>
+                </ul>
             </div>
         </nav>
+
         <main>
-            <div id="containerColumn">
-                <div class="card" id="trainerCard">
-                    <p>ENTRENADOR</p>
-                    <div id="trainerData">
-                        <div id="dataId">
-                            <div><p id="nameId">NOMBRE</p></div>
-                            <div><p id="pokemonId">POKéMON</p></div>
-                        </div>
-                        <div id="dataValue">
-                            <div><p id="trainerName"></p></div>
-                            <div><p id="trainerPokemon"></p></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card" id="actionPanel">
+            <div class="column">
+                <section class="card" id="trainerCard" aria-label="Datos del entrenador">
+                    <h2 class="cardTitle">ENTRENADOR</h2>
+                    <dl class="dataList">
+                        <div><dt>NOMBRE</dt><dd id="trainerName">-</dd></div>
+                        <div><dt>POKéMON</dt><dd id="trainerPokemon">-</dd></div>
+                        <div><dt>RÉCORD</dt><dd id="trainerRecord">0V - 0D</dd></div>
+                    </dl>
+                </section>
+
+                <section class="card" id="actionPanel" aria-label="Panel de acciones">
                     <div id="chat">
-                        <div class="chatArea" id="profesorOak">
-                            <img src="./img/profesorOak.png" alt="">
-                            <div id="textAreaOak">
-                                <p>PROFESOR</p>
-                                <P id="chatOak"></P>
+                        <div class="chatArea" id="oakChat">
+                            <img src="./img/profesorOak.png" alt="Profesor Oak">
+                            <div class="bubble">
+                                <p class="speaker">PROFESOR</p>
+                                <p id="chatOak"></p>
+                                <p id="anuncio" class="srOnly" aria-live="polite"></p>
                             </div>
                         </div>
                         <div class="chatArea" id="trainerChat">
-                            <div id="textAreaAsh">
-                                <p>ENTRENADOR</p>
-                                <p id="chatAsh">
-                                </p>
+                            <div class="bubble">
+                                <p class="speaker">ENTRENADOR</p>
+                                <div id="chatTrainer"></div>
                             </div>
-                            <img src="./img/ashKetchum.png" alt="">
+                            <img src="./img/ashKetchum.png" alt="Entrenador">
                         </div>
                     </div>
-                    <div id="answers">
-                        <button id="optionOne"><img id="optionOneImg" src="" alt=""></button>
-                        <button id="optionTwo"><img id="optionTwoImg" src="" alt=""></button>
-                        <button id="optionThree"><img id="optionThreeImg" src="./img/arrowRight.png" alt=""></img>
-                    </div>
-                </div>
+                    <div id="answers"></div>
+                </section>
             </div>
-            <div class="pokemonContainer">
-                <div class="card" id="pokedex">
-                    <p id="titleCard">-</p>
+
+            <div class="column">
+                <section class="card pokemonCard" id="cardJugador" aria-label="Tu Pokémon">
+                    <h2 class="cardTitle" data-campo="nombre">-</h2>
+                    <div class="healthBar" aria-hidden="true"><div class="healthFill" data-campo="barra"></div></div>
                     <div class="infoContainer">
-                        <div id="imageCard"><img id="image" src="" alt=""></div>
-                        <div id="stats">
-                            <div id="statsId">
-                                <div><p id="healthId">SALUD</p></div>
-                                <div><p id="damageId">DAÑO</p></div>
-                                <div><p id="typeId">TIPO</p></div>
-                            </div>
-                            <div id="statsValue">
-                                <div><p id="healthValue">-</p></div>
-                                <div><p id="damageValue">-</p></div>
-                                <div><p id="typeValue">-</p></div>
-                            </div>
-                        </div>
+                        <div class="imageCard"><img data-campo="imagen" src="" alt="" hidden></div>
+                        <dl class="dataList">
+                            <div><dt>SALUD</dt><dd data-campo="salud">-</dd></div>
+                            <div><dt>ATAQUE</dt><dd data-campo="ataque">-</dd></div>
+                            <div><dt>VELOC.</dt><dd data-campo="velocidad">-</dd></div>
+                            <div><dt>TIPO</dt><dd data-campo="tipo">-</dd></div>
+                        </dl>
                     </div>
-                </div>
-                <div class="card" id="pokedex">
-                    <p id="titleCardRival">-</p>
+                </section>
+
+                <section class="card pokemonCard" id="cardRival" aria-label="Pokémon rival">
+                    <h2 class="cardTitle" data-campo="nombre">-</h2>
+                    <div class="healthBar" aria-hidden="true"><div class="healthFill" data-campo="barra"></div></div>
                     <div class="infoContainer">
-                        <div id="imageCard"><img id="imageRival" src="" alt=""></div>
-                        <div id="stats">
-                            <div id="statsId">
-                                <div><p id="healthId">SALUD</p></div>
-                                <div><p id="damageId">DAÑO</p></div>
-                                <div><p id="typeId">TIPO</p></div>
-                            </div>
-                            <div id="statsValue">
-                                <div><p id="healthValueRival">-</p></div>
-                                <div><p id="damageValueRival">-</p></div>
-                                <div><p id="typeValueRival">-</p></div>
-                            </div>
-                        </div>
+                        <div class="imageCard"><img data-campo="imagen" src="" alt="" hidden></div>
+                        <dl class="dataList">
+                            <div><dt>SALUD</dt><dd data-campo="salud">-</dd></div>
+                            <div><dt>ATAQUE</dt><dd data-campo="ataque">-</dd></div>
+                            <div><dt>VELOC.</dt><dd data-campo="velocidad">-</dd></div>
+                            <div><dt>TIPO</dt><dd data-campo="tipo">-</dd></div>
+                        </dl>
                     </div>
-                </div>
-            </div>    
+                </section>
+            </div>
         </main>
-    </section>
-    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    </div>
+
+    <dialog id="modal" aria-labelledby="modalTitle">
+        <p id="modalIcon" aria-hidden="true"></p>
+        <h2 id="modalTitle"></h2>
+        <p id="modalText"></p>
+        <div id="modalButtons"></div>
+    </dialog>
+
+    <script src="./js/datos.js"></script>
     <script src="./js/index.js"></script>
 </body>
 </html>
