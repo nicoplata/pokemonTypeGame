@@ -1,16 +1,70 @@
+@use 'variables' as *;
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 body {
-    padding: 0;
     margin: 0;
+    padding: 0;
+    background-color: #ffffff;
+    color: $texto;
+    font-family: $fuente;
+    font-size: 14px;
+}
+
+h1,
+h2,
+p,
+dl,
+dd,
+ul {
+    margin: 0;
+}
+
+h2 {
+    font-size: 16px;
+    font-weight: normal;
+}
+
+button {
+    font-family: $fuente;
+    color: $texto;
+}
+
+button:focus-visible,
+input:focus-visible {
+    outline: 3px solid $acento;
+    outline-offset: 2px;
+}
+
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 #page {
     display: grid;
     width: 100%;
-    height: auto;
     grid-template-areas:
-      "head head"
-      "nav  main"
-      ;
-    grid-template-columns: 20em;
-    font-family: 'Press Start 2P', cursive;
+        "head head"
+        "nav  main";
+    grid-template-columns: 18em 1fr;
+
+    @media (max-width: $movil) {
+        grid-template-areas:
+            "head"
+            "nav"
+            "main";
+        grid-template-columns: 1fr;
+    }
 }

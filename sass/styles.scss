@@ -1,8 +1,8 @@
-@import "fonts";
-@import "page";
-@import "header";
-@import "nav";
-@import "main";
-@import "infoTrainer";
-@import "actionPanel";
-@import "pokedex";
+@use 'page';
+@use 'header';
+@use 'nav';
+@use 'main';
+@use 'infoTrainer';
+@use 'actionPanel';
+@use 'pokedex';
+@use 'modal';

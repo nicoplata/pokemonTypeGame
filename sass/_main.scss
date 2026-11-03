@@ -1,20 +1,61 @@
+@use 'variables' as *;
+
 main {
     grid-area: main;
-    background-color: white;
     display: flex;
     flex-direction: row;
-    justify-content: flex-start;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    min-width: 0;
+
+    .column {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        max-width: 100%;
+    }
 
     .card {
-        width: 500px;
-        margin: 30px;
+        width: 440px;
+        max-width: calc(100% - 40px);
+        margin: 20px;
         padding: 30px;
-        background-color: white;
+        background-color: #ffffff;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-items: center;
-        border: solid lightgray 2pt;
-        border-radius: 20pt;
+        border: 2px solid $borde;
+        border-radius: $radio;
+    }
+
+    .cardTitle {
+        padding-bottom: 16px;
+    }
+
+    .dataList {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        column-gap: 40px;
+        row-gap: 14px;
+
+        div {
+            display: contents;
+        }
+
+        dd {
+            overflow-wrap: anywhere;
+        }
+    }
+
+    @media (max-width: $movil) {
+        flex-direction: column;
+        align-items: stretch;
+
+        .card {
+            width: auto;
+            max-width: none;
+            margin: 16px;
+            padding: 20px 16px;
+        }
     }
 }
