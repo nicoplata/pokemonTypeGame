@@ -9,7 +9,12 @@ vienen de [PokéAPI](https://pokeapi.co/).
 ## Cómo jugar
 
 1. Abrí el juego publicado en GitHub Pages, o levantalo en tu compu (ver abajo).
-2. Ingresá tu nombre y elegí tu Pokémon y tu rival.
+2. Ingresá tu nombre y elegí un modo:
+   - **Campaña**: enfrentás en orden a ocho entrenadores especializados en un
+     tipo (cada victoria da una medalla) y al campeón final. Los equipos
+     rivales evolucionan y suben de nivel con el tuyo, y los últimos
+     entrenadores improvisan menos. El progreso se guarda.
+   - **Combate libre**: elegís a tu rival (o al azar).
 3. Armá un equipo de tres: tu inicial y dos compañeros (sugeridos, al azar o
    buscados en la Pokédex). El rival también tiene tres.
 4. En cada turno elegí un movimiento o cambiá de Pokémon con **EQUIPO**. Los

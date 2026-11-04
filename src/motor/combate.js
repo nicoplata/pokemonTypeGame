@@ -325,11 +325,11 @@ export function mayorDanio (pokedex, atacante, defensor) {
     return Math.max(...disponibles.map((m) => danioEstimado(atacante, defensor, pokedex.movimiento(m.id))))
 }
 
-// El rival suele elegir el mejor movimiento, pero a veces elige otro al azar
-// para no ser predecible.
-export function elegirMovimientoIA (pokedex, rival, jugador, azar = Math.random) {
+// El rival suele elegir el mejor movimiento, pero a veces (con probabilidad
+// `aleatoriedad`) elige otro al azar para no ser predecible.
+export function elegirMovimientoIA (pokedex, rival, jugador, azar = Math.random, aleatoriedad = 0.2) {
     const disponibles = movimientosDisponibles(rival)
     if (disponibles.length === 0) return FORCEJEO
-    if (azar() < 0.2) return disponibles[Math.floor(azar() * disponibles.length)].indice
+    if (azar() < aleatoriedad) return disponibles[Math.floor(azar() * disponibles.length)].indice
     return mejorMovimiento(pokedex, rival, jugador).eleccion
 }

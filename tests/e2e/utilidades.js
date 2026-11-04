@@ -68,13 +68,20 @@ export async function elegirPokemon (page, eleccion) {
     }
 }
 
-// Desde el nombre hasta tener el equipo armado (compañeros al azar).
-export async function armarEquipo (page, { nombre = 'ASH', inicial }) {
+// La introducción: nombre y presentación del profesor, hasta el menú.
+export async function introducir (page, nombre = 'ASH') {
     await avanzar(page, 'Bienvenido')
     await esperarTexto(page, 'llamas')
     await page.locator('#nameInput').fill(nombre)
     await continuar(page)
     await avanzar(page, 'conocerte', 'camino', 'ligera')
+    await esperarTexto(page, 'Qué quieres hacer')
+}
+
+export const elegirModo = (page, modo) => botones(page).filter({ hasText: modo }).first().click()
+
+// Arma un equipo nuevo con el inicial dado y dos compañeros al azar.
+export async function armarEquipoNuevo (page, inicial) {
     await esperarTexto(page, 'eliges')
     await elegirPokemon(page, inicial)
     await avanzar(page, 'Excelente', 'nunca viaja solo')
@@ -85,9 +92,21 @@ export async function armarEquipo (page, { nombre = 'ASH', inicial }) {
     await avanzar(page, 'equipo está listo')
 }
 
-// Juega desde el inicio hasta el primer turno del combate.
+// Desde el inicio hasta tener el equipo armado en el combate libre.
+export async function armarEquipo (page, { nombre = 'ASH', inicial }) {
+    await introducir(page, nombre)
+    await elegirModo(page, 'COMBATE LIBRE')
+    await armarEquipoNuevo(page, inicial)
+}
+
+// Juega desde el inicio hasta el primer turno de un combate libre.
 export async function llegarAlCombate (page, { nombre = 'ASH', inicial, rival }) {
     await armarEquipo(page, { nombre, inicial })
+    await elegirRivalLibre(page, rival)
+}
+
+// En el combate libre, después de tener equipo: elige rival y llega al primer turno.
+export async function elegirRivalLibre (page, rival) {
     await avanzar(page, 'listo', 'acción', 'entrenamiento')
     await esperarTexto(page, 'combatir')
     await elegirPokemon(page, rival)

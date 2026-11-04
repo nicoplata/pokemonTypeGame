@@ -2,7 +2,9 @@
 
 import { TEXTOS } from './datos/textos.js'
 import { IMAGENES_LOCALES, INICIALES, NIVEL_INICIAL, RIVALES, spritePokemon } from './datos/juego.js'
+import { ENTRENADORES, TOTAL_MEDALLAS } from './datos/campania.js'
 import { pokemonAlAzar } from './motor/busqueda.js'
+import { aleatoriedad, especiesEntrenador, nivelEntrenador } from './motor/campania.js'
 import { crearCombate } from './motor/equipos.js'
 import { curar } from './motor/experiencia.js'
 import { crearLuchador, resumirLuchador } from './motor/luchador.js'
@@ -29,6 +31,7 @@ const ui = {
     trainerName: $('#trainerName'),
     trainerPokemon: $('#trainerPokemon'),
     trainerRecord: $('#trainerRecord'),
+    trainerMedallas: $('#trainerMedallas'),
     listHint: $('#listHint'),
     busquedaLateral: $('#busquedaLateral'),
     cards: { jugador: $('#cardJugador'), rival: $('#cardRival') }
@@ -55,6 +58,9 @@ function actualizarEntrenador () {
     ui.trainerName.textContent = estado.nombre || progreso.nombre || '-'
     ui.trainerPokemon.textContent = estado.equipo.length ? estado.equipo.map((l) => l.nombre).join(', ') : '-'
     ui.trainerRecord.textContent = `${progreso.victorias}V - ${progreso.derrotas}D`
+    ui.trainerMedallas.textContent = progreso.campania >= ENTRENADORES.length
+        ? `${TOTAL_MEDALLAS}/${TOTAL_MEDALLAS} ★`
+        : `${Math.min(progreso.campania, TOTAL_MEDALLAS)}/${TOTAL_MEDALLAS}`
 }
 
 function habilitarPokedex (habilitada) {
@@ -67,8 +73,9 @@ function habilitarPokedex (habilitada) {
 // desactiva una vez elegido el inicial.
 function prepararPokedexLateral () {
     listaLateral = crearListaPokemon($('#listaLateral'), $('#vacioLateral'), estado.pokedex.especies(), (id) => {
-        if (estado.equipo.length) return
-        mostrarFicha(ui.cards.jugador, crearLuchador(estado.pokedex, id, NIVEL_INICIAL))
+        // Con un equipo armado, la consulta se muestra en la ficha de la derecha.
+        const card = estado.equipo.length ? ui.cards.rival : ui.cards.jugador
+        mostrarFicha(card, crearLuchador(estado.pokedex, id, NIVEL_INICIAL))
     })
     ui.busquedaLateral.addEventListener('input', () => listaLateral.filtrar(ui.busquedaLateral.value))
 }
@@ -154,13 +161,18 @@ async function elegirPokemon ({ pregunta, sugeridos, titulo, permitirAzar, exclu
     }
 }
 
-function reiniciarPantalla () {
-    estado.equipo = []
+// Deja la pantalla lista para un combate o para el menú: sin escena ni
+// rival, con el equipo del jugador (si tiene) en su ficha.
+function limpiarPantalla () {
     ocultarEscena()
-    limpiarFicha(ui.cards.jugador)
     limpiarFicha(ui.cards.rival)
     mostrarEnEntrenador()
-    habilitarPokedex(true)
+    if (estado.equipo.length) {
+        mostrarFicha(ui.cards.jugador, estado.equipo[0])
+        mostrarEquipo(ui.cards.jugador, estado.equipo, 0)
+    } else {
+        limpiarFicha(ui.cards.jugador)
+    }
     actualizarEntrenador()
 }
 
@@ -210,17 +222,15 @@ async function ofrecerEquipoGuardado () {
         { texto: 'NUEVO', detalle: 'ARMAR OTRO', valor: false }
     ])
     if (!seguir) return false
-    habilitarPokedex(false)
     estado.equipo = equipo
-    mostrarFicha(ui.cards.jugador, equipo[0])
-    mostrarEquipo(ui.cards.jugador, equipo, 0)
-    actualizarEntrenador()
+    limpiarPantalla()
     return true
 }
 
 async function armarEquipo () {
+    estado.equipo = []
+    limpiarPantalla()
     const idInicial = await elegirPokemon({ pregunta: TEXTOS.elegirInicial, sugeridos: INICIALES, titulo: TEXTOS.tituloInicial })
-    habilitarPokedex(false)
     estado.equipo = [crear(idInicial)]
     mostrarEquipoEnArmado()
     decirEntrenador(`¡Elijo a ${estado.equipo[0].nombre}!`)
@@ -240,52 +250,26 @@ async function armarEquipo () {
         mostrarEquipoEnArmado()
         decirEntrenador(`¡${estado.equipo.at(-1).nombre}, te elijo!`)
     }
-    mostrarFicha(ui.cards.jugador, estado.equipo[0])
-    mostrarEquipo(ui.cards.jugador, estado.equipo, 0)
+    limpiarPantalla()
     await decir(TEXTOS.equipoListo(estado.equipo.map((l) => l.nombre).join(', ')))
+    guardarEquipo()
 }
 
-async function armarEquipoRival () {
-    const ids = estado.equipo.map((l) => l.id)
-    const idRival = await elegirPokemon({
-        pregunta: TEXTOS.elegirRival, sugeridos: RIVALES, titulo: TEXTOS.tituloRival, permitirAzar: true, excluir: ids
-    })
-    const nivel = Math.max(NIVEL_INICIAL, nivelPromedio(estado.equipo))
-    const equipo = [idRival, ...sugerencias(TAMANIO_EQUIPO - 1, [...ids, idRival])].map((id) => crear(id, nivel))
-    decirEntrenador(`¡Quiero combatir contra ${equipo[0].nombre}!`)
-    return equipo
+// Antes de combatir hace falta un equipo: el actual, el guardado o uno nuevo.
+async function asegurarEquipo () {
+    if (estado.equipo.length) return
+    if (await ofrecerEquipoGuardado()) return
+    await armarEquipo()
 }
 
-async function partida (esRevancha) {
-    reiniciarPantalla()
-
-    if (esRevancha && estado.nombre) {
-        await decir(TEXTOS.saludoNuevamente(estado.nombre))
-    } else {
-        await decir(TEXTOS.bienvenida)
-        estado.nombre = await pedirNombre()
-        progreso.nombre = estado.nombre
-        guardarProgreso(progreso)
-        actualizarEntrenador()
-        await decir(TEXTOS.saludo(estado.nombre))
-        await decir(TEXTOS.camino)
-        await decir(TEXTOS.decision)
-    }
-
-    if (!(await ofrecerEquipoGuardado())) {
-        await armarEquipo()
-        guardarEquipo()
-    }
-    await decir(TEXTOS.listo)
-    await decir(TEXTOS.accion)
-    await decir(TEXTOS.entrenamiento)
-
-    const equipoRival = await armarEquipoRival()
+// Combate contra un equipo rival controlado por la IA. Reparte experiencia,
+// procesa evoluciones y cura al equipo al final. Devuelve true si gana.
+async function combatirContraIA (equipoRival, { aleatoriedad = 0.2, presentacion = [] } = {}) {
+    habilitarPokedex(false)
     const combate = crearCombate(estado.equipo, equipoRival)
     const presentador = crearPresentador(ui.cards, { ocultarEquipo: { rival: true } })
     presentador.mostrarLado(combate, 'rival')
-    await decir(TEXTOS.equipoRival(equipoRival[0].nombre))
-    await decir(TEXTOS.consejoTipos)
+    for (const texto of presentacion) await decir(texto)
     mostrarEnEntrenador()
 
     iniciarMusica('combate')
@@ -293,7 +277,10 @@ async function partida (esRevancha) {
         pokedex: estado.pokedex,
         combate,
         presentador,
-        controladores: { jugador: crearControladorHumano(estado.pokedex), rival: crearControladorIA(estado.pokedex) },
+        controladores: {
+            jugador: crearControladorHumano(estado.pokedex),
+            rival: crearControladorIA(estado.pokedex, { aleatoriedad })
+        },
         alDebilitarse: crearRepartoDeExperiencia(estado.pokedex, ui.cards.jugador)
     })
     const gano = ganador === 'jugador'
@@ -305,25 +292,116 @@ async function partida (esRevancha) {
     estado.equipo = combate.jugador.equipo
     guardarEquipo()
     actualizarEntrenador()
-    await decir(gano ? TEXTOS.ganaste(estado.nombre) : TEXTOS.perdiste(estado.nombre))
+    return gano
+}
 
+async function despuesDelCombate () {
     await procesarEvoluciones(estado.pokedex, estado.equipo, ui.cards.jugador)
     estado.equipo.forEach(curar)
     guardarEquipo()
-    mostrarFicha(ui.cards.jugador, estado.equipo[0])
-    mostrarEquipo(ui.cards.jugador, estado.equipo, 0)
-    actualizarEntrenador()
+    limpiarPantalla()
     reproducir('curar')
     await decir(TEXTOS.centro)
     iniciarMusica('menu')
+}
 
-    const jugarDeNuevo = await modal({
+async function mostrarResultado (gano, texto) {
+    await modal({
         icono: gano ? '★' : '✖',
         titulo: gano ? '¡GANASTE!' : '¡PERDISTE!',
-        texto: '¿Deseas jugar nuevamente?',
-        botones: [{ texto: '¡SÍ!', valor: true }, { texto: 'NO', valor: false }]
+        texto,
+        botones: [{ texto: 'CONTINUAR', valor: true }]
     })
-    if (!jugarDeNuevo) await decir(TEXTOS.despedida, [{ texto: 'JUGAR DE NUEVO', valor: true }])
+}
+
+// ---------- Combate libre ----------
+
+async function combateLibre () {
+    await asegurarEquipo()
+    await decir(TEXTOS.listo)
+    await decir(TEXTOS.accion)
+    await decir(TEXTOS.entrenamiento)
+
+    const ids = estado.equipo.map((l) => l.id)
+    const idRival = await elegirPokemon({
+        pregunta: TEXTOS.elegirRival, sugeridos: RIVALES, titulo: TEXTOS.tituloRival, permitirAzar: true, excluir: ids
+    })
+    const nivel = Math.max(NIVEL_INICIAL, nivelPromedio(estado.equipo))
+    const equipoRival = [idRival, ...sugerencias(TAMANIO_EQUIPO - 1, [...ids, idRival])].map((id) => crear(id, nivel))
+    decirEntrenador(`¡Quiero combatir contra ${equipoRival[0].nombre}!`)
+
+    const gano = await combatirContraIA(equipoRival, {
+        presentacion: [TEXTOS.equipoRival(equipoRival[0].nombre), TEXTOS.consejoTipos]
+    })
+    await decir(gano ? TEXTOS.ganaste(estado.nombre) : TEXTOS.perdiste(estado.nombre))
+    await despuesDelCombate()
+    await mostrarResultado(gano, gano ? TEXTOS.ganaste(estado.nombre) : TEXTOS.perdiste(estado.nombre))
+}
+
+// ---------- Campaña ----------
+
+async function jugarCampania () {
+    await asegurarEquipo()
+    const completa = progreso.campania >= ENTRENADORES.length
+    const indice = Math.min(progreso.campania, ENTRENADORES.length - 1)
+    const entrenador = ENTRENADORES[indice]
+    const nivel = nivelEntrenador(entrenador, nivelPromedio(estado.equipo))
+    const equipoRival = especiesEntrenador(estado.pokedex, entrenador, nivel).map((id) => crear(id, nivel))
+
+    await decir(completa ? TEXTOS.revanchaCampeon(entrenador.nombre) : TEXTOS.desafio(entrenador, indice))
+    const gano = await combatirContraIA(equipoRival, {
+        aleatoriedad: aleatoriedad(entrenador),
+        presentacion: [TEXTOS.frase(entrenador.nombre, entrenador.saludo), TEXTOS.envia(entrenador.nombre, equipoRival[0].nombre)]
+    })
+
+    let resumen
+    if (gano) {
+        await decir(TEXTOS.frase(entrenador.nombre, entrenador.derrota))
+        if (!completa) {
+            progreso.campania = indice + 1
+            guardarProgreso(progreso)
+            actualizarEntrenador()
+        }
+        resumen = indice === ENTRENADORES.length - 1 ? TEXTOS.campeon(estado.nombre) : TEXTOS.medalla(entrenador.medalla)
+    } else {
+        resumen = TEXTOS.derrotaCampania(entrenador.nombre)
+    }
+    await decir(resumen)
+    await despuesDelCombate()
+    await mostrarResultado(gano, resumen)
+}
+
+// ---------- Menú ----------
+
+async function menu () {
+    limpiarPantalla()
+    habilitarPokedex(true)
+    const medallas = Math.min(progreso.campania, TOTAL_MEDALLAS)
+    const opciones = [
+        {
+            texto: 'CAMPAÑA',
+            detalle: progreso.campania >= ENTRENADORES.length ? 'CAMPEÓN' : `MEDALLAS ${medallas}/${TOTAL_MEDALLAS}`,
+            valor: 'campania'
+        },
+        { texto: 'COMBATE LIBRE', detalle: 'ELEGÍS RIVAL', valor: 'libre' }
+    ]
+    if (estado.equipo.length || equipoGuardado().length) opciones.push({ texto: 'NUEVO EQUIPO', detalle: 'ARMAR OTRO', valor: 'equipo' })
+    const eleccion = await decir(TEXTOS.menu(estado.nombre), opciones)
+    habilitarPokedex(false)
+    if (eleccion === 'campania') await jugarCampania()
+    else if (eleccion === 'libre') await combateLibre()
+    else await armarEquipo()
+}
+
+async function introduccion () {
+    await decir(TEXTOS.bienvenida)
+    estado.nombre = await pedirNombre()
+    progreso.nombre = estado.nombre
+    guardarProgreso(progreso)
+    actualizarEntrenador()
+    await decir(TEXTOS.saludo(estado.nombre))
+    await decir(TEXTOS.camino)
+    await decir(TEXTOS.decision)
 }
 
 function prepararBotonSonido () {
@@ -342,13 +420,11 @@ async function iniciar () {
     actualizarEntrenador()
     estado.pokedex = await cargarPokedexConReintento()
     prepararPokedexLateral()
+    habilitarPokedex(true)
     prepararSelector(estado.pokedex.especies())
 
-    let esRevancha = false
-    for (;;) {
-        await partida(esRevancha)
-        esRevancha = true
-    }
+    await introduccion()
+    for (;;) await menu()
 }
 
 iniciar().catch((error) => {

@@ -73,7 +73,7 @@ export function mejorCompanero (pokedex, combate, lado, candidatos) {
 
 // El rival ataca; solo cambia si no puede hacerle daño al Pokémon de
 // enfrente y tiene un compañero que sí.
-export function elegirAccionIA (pokedex, combate, lado = 'rival', azar = Math.random) {
+export function elegirAccionIA (pokedex, combate, lado = 'rival', azar = Math.random, aleatoriedad = 0.2) {
     const yo = activo(combate, lado)
     const enfrente = activo(combate, otroLado(lado))
     const candidatos = disponiblesParaCambio(combate, lado)
@@ -81,7 +81,7 @@ export function elegirAccionIA (pokedex, combate, lado = 'rival', azar = Math.ra
         const companero = mejorCompanero(pokedex, combate, lado, candidatos)
         if (companero.danio > 0) return { tipo: 'cambio', indice: companero.indice }
     }
-    return { tipo: 'movimiento', eleccion: elegirMovimientoIA(pokedex, yo, enfrente, azar) }
+    return { tipo: 'movimiento', eleccion: elegirMovimientoIA(pokedex, yo, enfrente, azar, aleatoriedad) }
 }
 
 export function elegirReemplazoIA (pokedex, combate, lado = 'rival') {

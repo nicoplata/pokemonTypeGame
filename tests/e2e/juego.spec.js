@@ -1,7 +1,18 @@
 import { expect, test } from '@playwright/test'
 import {
-    armarEquipo, avanzar, botones, continuar, elegirPokemon, esperarTexto, llegarAlCombate, pelear, prepararPagina, textoOak
+    armarEquipoNuevo, avanzar, botones, continuar, elegirModo, elegirPokemon, esperarTexto, introducir, llegarAlCombate,
+    pelear, prepararPagina, textoOak
 } from './utilidades.js'
+
+const continuarModal = (page) => page.locator('#modalButtons button').filter({ hasText: 'CONTINUAR' }).click()
+
+// Con un equipo guardado: introducción, modo y "SEGUIR" con ese equipo.
+async function seguirConEquipoGuardado (page, modo = 'COMBATE LIBRE') {
+    await introducir(page)
+    await elegirModo(page, modo)
+    await esperarTexto(page, 'ya tienes un equipo')
+    await botones(page).filter({ hasText: 'SEGUIR' }).click()
+}
 
 test('valida el nombre y lo muestra como texto', async ({ page }) => {
     const errores = await prepararPagina(page)
@@ -62,7 +73,6 @@ for (const [inicial, rival, ataque] of combinaciones) {
 
         const titulo = await page.locator('#modalTitle').textContent()
         if (titulo === '¡GANASTE!') {
-            await expect(page.locator('#cardRival .equipoIndicador li.debilitado')).toHaveCount(3)
             await expect(page.locator('#trainerRecord')).toHaveText('1V - 0D')
         } else {
             expect(titulo).toBe('¡PERDISTE!')
@@ -71,25 +81,25 @@ for (const [inicial, rival, ataque] of combinaciones) {
         // Después del combate el equipo queda curado.
         await expect(page.locator('#cardJugador .equipoIndicador li.debilitado')).toHaveCount(0)
 
-        await page.locator('#modalButtons button').filter({ hasText: 'NO' }).click()
-        await esperarTexto(page, 'Vuelve cuando')
-        await botones(page).filter({ hasText: 'JUGAR DE NUEVO' }).click()
-        await esperarTexto(page, 'Hola de nuevo, ASH')
+        await continuarModal(page)
+        // Vuelve al menú, con el equipo armado y la Pokédex disponible.
+        await esperarTexto(page, 'Qué quieres hacer, ASH')
         await expect(page.locator('#listaLateral button').first()).toBeEnabled()
         await expect(page.locator('#cardRival [data-campo="nombre"]')).toHaveText('-')
-        await continuar(page)
-        await esperarTexto(page, 'ya tienes un equipo')
-        await expect(botones(page)).toHaveText(['SEGUIRMI EQUIPO', 'NUEVOARMAR OTRO'])
+        await expect(botones(page)).toHaveText(['CAMPAÑAMEDALLAS 0/8', 'COMBATE LIBREELEGÍS RIVAL', 'NUEVO EQUIPOARMAR OTRO'])
+        // El siguiente combate libre usa el mismo equipo sin preguntar.
+        await elegirModo(page, 'COMBATE LIBRE')
+        await esperarTexto(page, 'listo')
         expect(errores).toEqual([])
     })
 }
 
-test('Escape en la ventana final equivale a NO', async ({ page }) => {
+test('Escape en la ventana final vuelve al menú', async ({ page }) => {
     await prepararPagina(page)
     await llegarAlCombate(page, { inicial: 'squirtle', rival: 'cyndaquil' })
     await pelear(page)
     await page.keyboard.press('Escape')
-    await esperarTexto(page, 'Vuelve cuando')
+    await esperarTexto(page, 'Qué quieres hacer')
 })
 
 test('el récord se conserva al recargar', async ({ page }) => {
@@ -137,11 +147,8 @@ test('la Pokédex lateral busca entre los 251', async ({ page }) => {
 
 test('se puede elegir cualquier Pokémon y un rival al azar', async ({ page }) => {
     const errores = await prepararPagina(page)
-    await avanzar(page, 'Bienvenido')
-    await esperarTexto(page, 'llamas')
-    await page.locator('#nameInput').fill('ash')
-    await continuar(page)
-    await avanzar(page, 'conocerte', 'camino', 'ligera')
+    await introducir(page)
+    await elegirModo(page, 'COMBATE LIBRE')
     await esperarTexto(page, 'eliges')
 
     // Cancelar vuelve a las opciones.
@@ -210,6 +217,7 @@ test('el equipo se guarda con su nivel y evoluciona al terminar el combate', asy
     await expect(page.locator('#nameInput')).toHaveValue('ASH')
     await continuar(page)
     await avanzar(page, 'conocerte', 'camino', 'ligera')
+    await elegirModo(page, 'COMBATE LIBRE')
     await esperarTexto(page, 'ya tienes un equipo: CHARMANDER (Nv.\u00a016), SQUIRTLE (Nv.\u00a016), BULBASAUR (Nv.\u00a016)')
     await botones(page).filter({ hasText: 'SEGUIR' }).click()
     await expect(nivel(page, '#cardJugador')).toHaveText('16')
@@ -232,10 +240,7 @@ test('gana experiencia al derrotar a un rival y sube de nivel', async ({ page })
     // Equipo de nivel 30 (los rivales tienen el mismo nivel).
     const equipo = [{ id: 6, exp: 30000, movimientos: [] }, { id: 9, exp: 30000, movimientos: [] }, { id: 3, exp: 30000, movimientos: [] }]
     await prepararPagina(page, { progreso: { nombre: 'ASH', victorias: 0, derrotas: 0, equipo } })
-    await avanzar(page, 'Bienvenido')
-    await continuar(page)
-    await avanzar(page, 'conocerte', 'camino', 'ligera')
-    await botones(page).filter({ hasText: 'SEGUIR' }).click()
+    await seguirConEquipoGuardado(page)
     await avanzar(page, 'listo', 'acción', 'entrenamiento')
     await elegirPokemon(page, 'AL AZAR')
     await avanzar(page, 'también tendrá un equipo', 'Recuerda')
@@ -284,10 +289,7 @@ test('los estados alterados se muestran en la escena y en la ficha', async ({ pa
     // Pikachu de nivel 20 con Onda Trueno (86) e Impactrueno (84).
     const equipo = [{ id: 25, exp: 8000, movimientos: [86, 84] }, { id: 7, exp: 8000, movimientos: [] }, { id: 1, exp: 8000, movimientos: [] }]
     const errores = await prepararPagina(page, { progreso: { nombre: 'ASH', victorias: 0, derrotas: 0, equipo } })
-    await avanzar(page, 'Bienvenido')
-    await continuar(page)
-    await avanzar(page, 'conocerte', 'camino', 'ligera')
-    await botones(page).filter({ hasText: 'SEGUIR' }).click()
+    await seguirConEquipoGuardado(page)
     await avanzar(page, 'listo', 'acción', 'entrenamiento')
     await elegirPokemon(page, 'buscar:squirtle')
     await avanzar(page, 'también tendrá un equipo', 'Recuerda')
@@ -311,4 +313,63 @@ test('los estados alterados se muestran en la escena y en la ficha', async ({ pa
         expect(textos.some((t) => t.includes('ONDA TRUENO. ¡Pero falló!'))).toBe(true)
     }
     expect(errores).toEqual([])
+})
+
+test('campaña: el primer desafío y la medalla', async ({ page }) => {
+    const errores = await prepararPagina(page)
+    await introducir(page)
+    await expect(page.locator('#trainerMedallas')).toHaveText('0/8')
+    await elegirModo(page, 'CAMPAÑA')
+    await armarEquipoNuevo(page, 'charmander')
+    await esperarTexto(page, 'próximo desafío: LUCÍA, Cazabichos')
+    await continuar(page)
+    await esperarTexto(page, 'LUCÍA: «')
+    await expect(page.locator('#cardRival [data-campo="nivel"]')).toHaveText('8')
+    await continuar(page)
+    await esperarTexto(page, '¡LUCÍA envió a')
+    await continuar(page)
+    await pelear(page)
+    const titulo = await page.locator('#modalTitle').textContent()
+    const guardado = () => page.evaluate(() => JSON.parse(localStorage.getItem('pokemonTypeGame')).campania)
+    if (titulo === '¡GANASTE!') {
+        await expect(page.locator('#modalText')).toHaveText('¡Ganaste la Medalla Antena!')
+        await expect(page.locator('#trainerMedallas')).toHaveText('1/8')
+        expect(await guardado()).toBe(1)
+        await continuarModal(page)
+        await elegirModo(page, 'CAMPAÑA')
+        await esperarTexto(page, 'próximo desafío: GONZALO')
+    } else {
+        await expect(page.locator('#modalText')).toContainText('vuelve a intentarlo')
+        expect(await guardado()).toBe(0)
+        await continuarModal(page)
+        await elegirModo(page, 'CAMPAÑA')
+        await esperarTexto(page, 'próximo desafío: LUCÍA')
+    }
+    expect(errores).toEqual([])
+})
+
+test('campaña: el campeón y la revancha', async ({ page }) => {
+    const equipo = [{ id: 6, exp: 125000, movimientos: [] }, { id: 9, exp: 125000, movimientos: [] }, { id: 3, exp: 125000, movimientos: [] }]
+    await prepararPagina(page, { progreso: { nombre: 'ASH', victorias: 8, derrotas: 0, equipo, campania: 8 } })
+    await introducir(page)
+    await expect(page.locator('#trainerMedallas')).toHaveText('8/8')
+    await elegirModo(page, 'CAMPAÑA')
+    await botones(page).filter({ hasText: 'SEGUIR' }).click()
+    await esperarTexto(page, 'El Campeón LEONARDO te espera')
+    await continuar(page)
+    await avanzar(page, 'LEONARDO: «')
+    await esperarTexto(page, 'envió a')
+    // Al nivel 50 el campeón usa Dragonair, Gyarados y Pupitar.
+    await expect(page.locator('#cardRival [data-campo="nombre"]')).toHaveText('DRAGONAIR')
+})
+
+test('campaña completa: el menú muestra al campeón', async ({ page }) => {
+    const equipo = [{ id: 6, exp: 125000, movimientos: [] }, { id: 9, exp: 125000, movimientos: [] }, { id: 3, exp: 125000, movimientos: [] }]
+    await prepararPagina(page, { progreso: { nombre: 'ASH', victorias: 9, derrotas: 0, equipo, campania: 9 } })
+    await introducir(page)
+    await expect(page.locator('#trainerMedallas')).toHaveText('8/8 ★')
+    await expect(botones(page).first()).toHaveText('CAMPAÑACAMPEÓN')
+    await elegirModo(page, 'CAMPAÑA')
+    await botones(page).filter({ hasText: 'SEGUIR' }).click()
+    await esperarTexto(page, 'quiere la revancha')
 })

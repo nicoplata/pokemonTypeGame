@@ -7,9 +7,9 @@ import { activo, disponiblesParaCambio, elegirAccionIA, elegirReemplazoIA } from
 import { decir, decirEntrenador } from '../ui/dialogo.js'
 import { nombreTipo } from '../ui/fichas.js'
 
-export function crearControladorIA (pokedex, azar = Math.random) {
+export function crearControladorIA (pokedex, { azar = Math.random, aleatoriedad = 0.2 } = {}) {
     return {
-        elegirAccion: async (combate, lado) => elegirAccionIA(pokedex, combate, lado, azar),
+        elegirAccion: async (combate, lado) => elegirAccionIA(pokedex, combate, lado, azar, aleatoriedad),
         elegirReemplazo: async (combate, lado) => elegirReemplazoIA(pokedex, combate, lado)
     }
 }

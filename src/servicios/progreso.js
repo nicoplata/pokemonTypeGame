@@ -3,7 +3,7 @@
 const CLAVE = 'pokemonTypeGame'
 
 export function progresoVacio () {
-    return { nombre: '', victorias: 0, derrotas: 0, equipo: [] }
+    return { nombre: '', victorias: 0, derrotas: 0, equipo: [], campania: 0 }
 }
 
 const esEnteroPositivo = (valor) => Number.isInteger(valor) && valor >= 0
@@ -28,7 +28,9 @@ export function normalizarProgreso (datos) {
         nombre: typeof datos.nombre === 'string' ? datos.nombre : '',
         victorias: Number.isInteger(datos.victorias) ? datos.victorias : 0,
         derrotas: Number.isInteger(datos.derrotas) ? datos.derrotas : 0,
-        equipo: normalizarEquipo(datos.equipo)
+        equipo: normalizarEquipo(datos.equipo),
+        // Índice del próximo entrenador de la campaña (9 = campaña completa).
+        campania: Number.isInteger(datos.campania) && datos.campania >= 0 ? Math.min(datos.campania, 9) : 0
     }
 }
 

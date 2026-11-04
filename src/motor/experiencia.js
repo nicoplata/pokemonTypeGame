@@ -126,3 +126,12 @@ export function curar (luchador) {
     reiniciarEtapas(luchador)
     for (const m of luchador.movimientos) m.pp = m.ppMax
 }
+
+// La especie que tendría un Pokémon de esa línea evolutiva a ese nivel.
+export function evolucionarPorNivel (pokedex, idEspecie, nivel) {
+    let id = idEspecie
+    for (let evolucion = pokedex.especie(id).evolucion; evolucion && nivel >= evolucion.nivel; evolucion = pokedex.especie(id).evolucion) {
+        id = evolucion.a
+    }
+    return id
+}
