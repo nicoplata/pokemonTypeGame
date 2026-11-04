@@ -1,0 +1,204 @@
+@use 'variables' as *;
+
+.escena {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    margin-bottom: 20px;
+    border: 2px solid $borde;
+    border-radius: 12px;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse at 50% 120%, #b9e39a 0 45%, transparent 46%),
+        linear-gradient(to bottom, #dff2ff 0%, #f4fbff 55%, #e9f7dc 56%, #d6efc0 100%);
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+.ladoEscena {
+    position: absolute;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+
+    &[data-lado='rival'] {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    &[data-lado='jugador'] {
+        bottom: 8px;
+        left: 10px;
+        right: 10px;
+        justify-content: space-between;
+    }
+}
+
+.plataforma {
+    position: relative;
+    width: 120px;
+    height: 104px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    flex-shrink: 0;
+
+    // Sombra elíptica bajo el Pokémon.
+    &::before {
+        content: '';
+        position: absolute;
+        bottom: 2px;
+        left: 10%;
+        width: 80%;
+        height: 18px;
+        border-radius: 50%;
+        background-color: rgba(60, 110, 40, 0.35);
+    }
+}
+
+.spriteEscena {
+    position: relative;
+    width: 112px;
+    height: 112px;
+    image-rendering: pixelated;
+    object-fit: contain;
+
+    &:not([src]) {
+        visibility: hidden;
+    }
+}
+
+.cajaSalud {
+    min-width: 0;
+    width: 200px;
+    padding: 8px 10px;
+    background-color: rgba(255, 255, 255, 0.92);
+    border: 2px solid $texto;
+    border-radius: 8px;
+    font-size: 10px;
+    line-height: 14px;
+
+    p {
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .cajaNivel {
+        font-size: 8px;
+    }
+
+    .healthBar {
+        width: 100%;
+        height: 8px;
+        margin: 6px 0 4px;
+        background-color: $fondo-suave;
+        border: 1px solid $texto;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .healthFill {
+        height: 100%;
+        background-color: $vida-alta;
+        transition: width 0.6s ease, background-color 0.6s ease;
+
+        &.medio {
+            background-color: $vida-media;
+        }
+
+        &.bajo {
+            background-color: $vida-baja;
+        }
+    }
+
+    .cajaNumeros {
+        text-align: right;
+        font-size: 8px;
+    }
+}
+
+.textoFlotante {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    color: $texto;
+    text-shadow: 2px 2px 0 #ffffff;
+    pointer-events: none;
+    white-space: nowrap;
+
+    &.superEficaz {
+        color: $vida-baja;
+        font-size: 16px;
+    }
+
+    &.poco {
+        color: #6b6b6b;
+    }
+}
+
+@media (max-width: $movil) {
+    .escena {
+        height: 190px;
+    }
+
+    .plataforma {
+        width: 96px;
+        height: 88px;
+    }
+
+    .spriteEscena {
+        width: 92px;
+        height: 92px;
+    }
+
+    .cajaSalud {
+        width: 150px;
+        font-size: 8px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cajaSalud .healthFill {
+        transition: none;
+    }
+}
+
+// Durante el combate el diálogo ocupa menos alto.
+#actionPanel:has(#escena:not([hidden])) {
+    #oakChat #chatOak {
+        min-height: 78px;
+    }
+
+    .chatArea {
+        margin-bottom: 16px;
+    }
+}
+
+.chipEstado {
+    display: inline-block;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-size: 7px;
+    vertical-align: middle;
+    color: #ffffff;
+    background-color: #777777;
+
+    &[hidden] {
+        display: none;
+    }
+
+    &[data-estado='burn'] { background-color: #e0552f; }
+    &[data-estado='poison'] { background-color: #a33ea1; }
+    &[data-estado='paralysis'] { background-color: #b89a00; }
+    &[data-estado='sleep'] { background-color: #6b6b8c; }
+    &[data-estado='freeze'] { background-color: #3a8fb7; }
+}

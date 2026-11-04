@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Juego de combate por turnos con Pokémon y tabla de tipos, usando datos de PokéAPI.">
+    <meta name="theme-color" content="#cc0000">
     <title>Pokémon Type Game</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./img/icono-192.png" type="image/png">
+    <link rel="apple-touch-icon" href="./img/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -15,20 +19,19 @@
         <header>
             <img src="./img/pokemonLogo.png" alt="Logo de Pokémon">
             <h1>POKéDEX</h1>
+            <div class="botonesCabecera">
+                <button type="button" id="botonInstalar" class="botonCabecera" hidden>⬇ INSTALAR</button>
+                <button type="button" id="botonSonido" class="botonCabecera" aria-pressed="false">♪ SONIDO</button>
+            </div>
         </header>
 
         <nav aria-label="Pokédex">
             <div id="pokedexList">
-                <h2 class="listTitle">POKéMON</h2>
-                <p class="listHint" id="listHint">Tocá uno para ver sus datos</p>
-                <ul>
-                    <li><button type="button" class="pokemonLink" data-pokemon="bulbasaur">BULBASAUR</button></li>
-                    <li><button type="button" class="pokemonLink" data-pokemon="charmander">CHARMANDER</button></li>
-                    <li><button type="button" class="pokemonLink" data-pokemon="squirtle">SQUIRTLE</button></li>
-                    <li><button type="button" class="pokemonLink" data-pokemon="chikorita">CHIKORITA</button></li>
-                    <li><button type="button" class="pokemonLink" data-pokemon="cyndaquil">CYNDAQUIL</button></li>
-                    <li><button type="button" class="pokemonLink" data-pokemon="totodile">TOTODILE</button></li>
-                </ul>
+                <h2 class="listTitle">POKéDEX</h2>
+                <label class="listHint" id="listHint" for="busquedaLateral">Buscá por nombre, número o tipo</label>
+                <input id="busquedaLateral" class="busqueda" type="search" autocomplete="off" placeholder="pikachu, 25, fuego..." disabled>
+                <p class="sinResultados" id="vacioLateral" hidden>Sin resultados</p>
+                <ul id="listaLateral" class="listaPokemon"></ul>
             </div>
         </nav>
 
@@ -38,12 +41,31 @@
                     <h2 class="cardTitle">ENTRENADOR</h2>
                     <dl class="dataList">
                         <div><dt>NOMBRE</dt><dd id="trainerName">-</dd></div>
-                        <div><dt>POKéMON</dt><dd id="trainerPokemon">-</dd></div>
+                        <div><dt>EQUIPO</dt><dd id="trainerPokemon">-</dd></div>
                         <div><dt>RÉCORD</dt><dd id="trainerRecord">0V - 0D</dd></div>
+                        <div><dt>MEDALLAS</dt><dd id="trainerMedallas">0/8</dd></div>
                     </dl>
                 </section>
 
                 <section class="card" id="actionPanel" aria-label="Panel de acciones">
+                    <div id="escena" class="escena" hidden aria-hidden="true">
+                        <div class="ladoEscena" data-lado="rival">
+                            <div class="cajaSalud">
+                                <p><span data-e="nombre"></span> <span class="cajaNivel" data-e="nivel"></span> <span class="chipEstado" data-e="estado" hidden></span></p>
+                                <div class="healthBar"><div class="healthFill" data-e="barra"></div></div>
+                                <p class="cajaNumeros" data-e="salud"></p>
+                            </div>
+                            <div class="plataforma"><img class="spriteEscena" data-e="sprite" alt=""></div>
+                        </div>
+                        <div class="ladoEscena" data-lado="jugador">
+                            <div class="plataforma"><img class="spriteEscena" data-e="sprite" alt=""></div>
+                            <div class="cajaSalud">
+                                <p><span data-e="nombre"></span> <span class="cajaNivel" data-e="nivel"></span> <span class="chipEstado" data-e="estado" hidden></span></p>
+                                <div class="healthBar"><div class="healthFill" data-e="barra"></div></div>
+                                <p class="cajaNumeros" data-e="salud"></p>
+                            </div>
+                        </div>
+                    </div>
                     <div id="chat">
                         <div class="chatArea" id="oakChat">
                             <img src="./img/profesorOak.png" alt="Profesor Oak">
@@ -69,13 +91,18 @@
                 <section class="card pokemonCard" id="cardJugador" aria-label="Tu Pokémon">
                     <h2 class="cardTitle" data-campo="nombre">-</h2>
                     <div class="healthBar" aria-hidden="true"><div class="healthFill" data-campo="barra"></div></div>
+                    <div class="expBar" title="Experiencia"><div class="expFill" data-campo="exp"></div></div>
+                    <ul class="equipoIndicador" data-campo="equipo" aria-label="Equipo"></ul>
                     <div class="infoContainer">
                         <div class="imageCard"><img data-campo="imagen" src="" alt="" hidden></div>
                         <dl class="dataList">
+                            <div><dt>NIVEL</dt><dd data-campo="nivel">-</dd></div>
                             <div><dt>SALUD</dt><dd data-campo="salud">-</dd></div>
-                            <div><dt>ATAQUE</dt><dd data-campo="ataque">-</dd></div>
-                            <div><dt>VELOC.</dt><dd data-campo="velocidad">-</dd></div>
                             <div><dt>TIPO</dt><dd data-campo="tipo">-</dd></div>
+                            <div><dt>ESTADO</dt><dd data-campo="estado">-</dd></div>
+                            <div><dt title="Físico / Especial">ATAQUE</dt><dd data-campo="ataque">-</dd></div>
+                            <div><dt title="Física / Especial">DEFENSA</dt><dd data-campo="defensa">-</dd></div>
+                            <div><dt>VELOC.</dt><dd data-campo="velocidad">-</dd></div>
                         </dl>
                     </div>
                 </section>
@@ -83,19 +110,35 @@
                 <section class="card pokemonCard" id="cardRival" aria-label="Pokémon rival">
                     <h2 class="cardTitle" data-campo="nombre">-</h2>
                     <div class="healthBar" aria-hidden="true"><div class="healthFill" data-campo="barra"></div></div>
+                    <ul class="equipoIndicador" data-campo="equipo" aria-label="Equipo"></ul>
                     <div class="infoContainer">
                         <div class="imageCard"><img data-campo="imagen" src="" alt="" hidden></div>
                         <dl class="dataList">
+                            <div><dt>NIVEL</dt><dd data-campo="nivel">-</dd></div>
                             <div><dt>SALUD</dt><dd data-campo="salud">-</dd></div>
-                            <div><dt>ATAQUE</dt><dd data-campo="ataque">-</dd></div>
-                            <div><dt>VELOC.</dt><dd data-campo="velocidad">-</dd></div>
                             <div><dt>TIPO</dt><dd data-campo="tipo">-</dd></div>
+                            <div><dt>ESTADO</dt><dd data-campo="estado">-</dd></div>
+                            <div><dt title="Físico / Especial">ATAQUE</dt><dd data-campo="ataque">-</dd></div>
+                            <div><dt title="Física / Especial">DEFENSA</dt><dd data-campo="defensa">-</dd></div>
+                            <div><dt>VELOC.</dt><dd data-campo="velocidad">-</dd></div>
                         </dl>
                     </div>
                 </section>
             </div>
         </main>
     </div>
+
+    <dialog id="selector" aria-labelledby="selectorTitulo">
+        <h2 id="selectorTitulo"></h2>
+        <label class="srOnly" for="selectorBusqueda">Buscar Pokémon</label>
+        <input id="selectorBusqueda" class="busqueda" type="search" autocomplete="off" placeholder="Buscá por nombre, número o tipo">
+        <p class="sinResultados" id="selectorVacio" hidden>Sin resultados</p>
+        <ul id="selectorLista" class="listaPokemon grilla"></ul>
+        <div id="selectorBotones">
+            <button type="button" id="selectorAzar">AL AZAR</button>
+            <button type="button" id="selectorCancelar">CANCELAR</button>
+        </div>
+    </dialog>
 
     <dialog id="modal" aria-labelledby="modalTitle">
         <p id="modalIcon" aria-hidden="true"></p>
@@ -104,7 +147,6 @@
         <div id="modalButtons"></div>
     </dialog>
 
-    <script src="./js/datos.js"></script>
-    <script src="./js/index.js"></script>
+    <script type="module" src="./src/main.js"></script>
 </body>
 </html>

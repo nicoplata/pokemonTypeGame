@@ -1,4 +1,5 @@
 @use 'page';
+@use 'tipos';
 @use 'header';
 @use 'nav';
 @use 'main';
@@ -6,3 +7,5 @@
 @use 'actionPanel';
 @use 'pokedex';
 @use 'modal';
+@use 'listaPokemon';
+@use 'escena';
