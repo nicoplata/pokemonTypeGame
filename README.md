@@ -29,6 +29,19 @@ Los datos de los Pokémon y sus movimientos vienen de
    golpe. Cuando un Pokémon se debilita, elegís quién sale. Gana quien deja
    al otro equipo sin Pokémon.
 
+### Controles
+
+- Tocá una opción, o usá el teclado: <kbd>1</kbd>–<kbd>9</kbd> eligen la
+  opción y <kbd>Enter</kbd> o <kbd>Espacio</kbd> continúan.
+- Tocar el globo del profesor completa el texto o, si solo queda continuar,
+  avanza.
+- **» TEXTO** cambia la velocidad del texto (normal, rápido o instantáneo) y
+  **♪ SONIDO** silencia el juego. Las dos preferencias se recuerdan.
+- Cada movimiento muestra su tipo, PP, potencia y precisión, y una marca
+  (x2, x½, x0) si es súper eficaz, poco eficaz o no afecta al rival.
+
+### Reglas
+
 Cada Pokémon conoce los movimientos reales que aprende hasta su nivel
 (Arañazo, Ascuas, Látigo Cepa...), con su tipo, potencia, precisión y PP.
 Un movimiento hace el doble de daño contra un tipo débil (por ejemplo, Fuego
@@ -168,4 +181,6 @@ tests/unit/          Tests unitarios
 tests/e2e/           Tests en navegador
 scripts/             Servidor local, generador de datos, precache y armado del sitio
 sw.js                Service worker (juego sin conexión)
+fonts/               Fuente Press Start 2P (licencia SIL OFL)
+ROADMAP.md           Hoja de ruta de las próximas mejoras
 ```

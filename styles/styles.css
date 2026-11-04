@@ -1,3 +1,10 @@
+@font-face {
+  font-family: "Press Start 2P";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/press-start-2p.woff2") format("woff2");
+}
 *,
 *::before,
 *::after {
@@ -33,9 +40,10 @@ button {
 }
 
 button:focus-visible,
-input:focus-visible {
-  outline: 3px solid #cc0000;
-  outline-offset: 2px;
+input:focus-visible,
+summary:focus-visible {
+  outline: 2px solid #cc0000;
+  outline-offset: 3px;
 }
 
 .srOnly {
@@ -53,14 +61,36 @@ input:focus-visible {
 #page {
   display: grid;
   width: 100%;
-  grid-template-areas: "head head" "nav  main";
-  grid-template-columns: 18em 1fr;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 16px 24px;
+  gap: 20px;
+  grid-template-areas: "head    head  head" "lateral juego fichas";
+  grid-template-columns: minmax(220px, 280px) minmax(360px, 560px) minmax(280px, 1fr);
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  #page {
+    grid-template-areas: "head    head" "juego   fichas" "lateral lateral";
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  }
 }
 @media (max-width: 760px) {
   #page {
-    grid-template-areas: "head" "nav" "main";
-    grid-template-columns: 1fr;
+    padding: 0 12px 16px;
+    gap: 14px;
+    grid-template-areas: "head" "juego" "fichas" "lateral";
+    grid-template-columns: minmax(0, 1fr);
   }
+}
+
+kbd {
+  padding: 1px 4px;
+  border: 1px solid lightgray;
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  font-family: "Press Start 2P", monospace;
+  font-size: 9px;
 }
 
 .tipo-normal {
@@ -137,51 +167,55 @@ input:focus-visible {
 
 header {
   grid-area: head;
-  margin-top: 45px;
   display: flex;
   flex-direction: row;
   align-items: center;
   flex-wrap: wrap;
-  gap: 20px;
-  padding: 0 50px;
+  gap: 12px 20px;
+  padding: 16px 4px 0;
 }
 header img {
-  width: 250px;
-  max-width: 60vw;
+  width: 150px;
   height: auto;
 }
 header h1 {
-  font-size: 30px;
+  font-size: 22px;
   font-weight: normal;
+  color: #111111;
+  letter-spacing: 1px;
 }
 @media (max-width: 760px) {
   header {
-    margin-top: 20px;
-    padding: 0 16px;
+    padding-top: 12px;
     justify-content: center;
   }
+  header img {
+    width: 110px;
+  }
   header h1 {
-    font-size: 20px;
+    font-size: 16px;
   }
 }
 
 .botonesCabecera {
   margin-left: auto;
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 @media (max-width: 760px) {
   .botonesCabecera {
     margin-left: 0;
+    justify-content: center;
   }
 }
 
 .botonCabecera {
-  padding: 10px 14px;
+  padding: 8px 12px;
   background-color: #ffffff;
   border: 2px solid lightgray;
   border-radius: 10px;
-  font-size: 10px;
+  font-size: 9px;
   cursor: pointer;
 }
 .botonCabecera:hover {
@@ -191,75 +225,95 @@ header h1 {
   display: none;
 }
 .botonCabecera[aria-pressed=true] {
-  color: #777777;
+  color: #666666;
   text-decoration: line-through;
 }
 
-nav {
-  grid-area: nav;
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-start;
+#lateral {
+  grid-area: lateral;
   min-width: 0;
-}
-nav #pokedexList {
-  margin: 20px;
-  padding: 24px 16px;
-  width: 100%;
   display: flex;
   flex-direction: column;
+  gap: 20px;
+}
+@media (max-width: 1100px) {
+  #lateral {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  #lateral > * {
+    flex: 1 1 280px;
+  }
+}
+
+#pokedexList {
   align-items: stretch;
   gap: 12px;
+  padding: 18px 14px;
   background-color: #e2e2e2;
-  border: 2px solid lightgray;
-  border-radius: 20px;
 }
-nav .listTitle {
+#pokedexList:not([open]) {
+  gap: 0;
+}
+#pokedexList .listTitle {
+  list-style: none;
+  cursor: pointer;
   text-align: center;
+  font-size: 16px;
 }
-nav .listHint {
-  font-size: 8px;
+#pokedexList .listTitle::-webkit-details-marker {
+  display: none;
+}
+#pokedexList .listTitle::after {
+  content: " -";
+}
+#pokedexList:not([open]) .listTitle::after {
+  content: " +";
+}
+#pokedexList .listHint {
+  font-size: 9px;
   line-height: 14px;
   text-align: center;
 }
-nav .listaPokemon {
+#pokedexList .listaPokemon {
   max-height: 420px;
   overflow-y: auto;
   background-color: #ffffff;
   border-radius: 10px;
 }
 @media (max-width: 760px) {
-  nav {
-    justify-content: center;
-  }
-  nav #pokedexList {
-    margin: 16px;
-    padding: 16px;
-  }
-  nav .listaPokemon {
-    max-height: 200px;
+  #pokedexList .listaPokemon {
+    max-height: 260px;
   }
 }
 
-main {
-  grid-area: main;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: flex-start;
+#juego {
+  grid-area: juego;
   min-width: 0;
 }
-main .column {
+
+#fichas {
+  grid-area: fichas;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  min-width: 0;
-  max-width: 100%;
+  gap: 20px;
 }
-main .card {
-  width: 440px;
-  max-width: calc(100% - 40px);
-  margin: 20px;
-  padding: 30px;
+@media (max-width: 760px) {
+  #fichas {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  #fichas .card {
+    flex: 1 1 260px;
+  }
+}
+
+.card {
+  min-width: 0;
+  padding: 24px;
   background-color: #ffffff;
   display: flex;
   flex-direction: column;
@@ -267,108 +321,124 @@ main .card {
   border: 2px solid lightgray;
   border-radius: 20px;
 }
-main .cardTitle {
-  padding-bottom: 16px;
-}
-main .dataList {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  column-gap: 40px;
-  row-gap: 8px;
-}
-main .dataList div {
-  display: contents;
-}
-main .dataList dd {
-  overflow-wrap: break-word;
-  min-width: 0;
-  line-height: 20px;
-}
-main .dataList dt {
-  line-height: 20px;
-}
 @media (max-width: 760px) {
-  main {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  main .card {
-    width: auto;
-    max-width: none;
-    margin: 16px;
-    padding: 20px 16px;
+  .card {
+    padding: 16px 14px;
   }
 }
 
-#trainerCard .dataList {
-  margin: 10px;
+.cardTitle {
+  padding-bottom: 14px;
+}
+
+.dataList {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 24px;
+  row-gap: 6px;
+}
+.dataList div {
+  display: contents;
+}
+.dataList dt {
+  font-size: 11px;
+  line-height: 20px;
+  color: #444444;
+}
+.dataList dd {
+  font-size: 11px;
+  line-height: 20px;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+#trainerCard {
+  align-items: stretch;
+}
+#trainerCard .cardTitle {
+  text-align: center;
+}
+#trainerCard .dataList dd {
+  font-size: 10px;
 }
 
 #actionPanel {
-  min-height: 450px;
-  justify-content: space-between;
+  align-items: stretch;
+  gap: 14px;
 }
 #actionPanel #chat {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 #actionPanel .chatArea {
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  margin-bottom: 30px;
+  gap: 14px;
 }
 #actionPanel .chatArea > img {
-  width: 100px;
-  height: 100px;
+  width: 72px;
+  height: 72px;
   flex-shrink: 0;
+  object-fit: contain;
 }
 #actionPanel .bubble {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-width: 0;
-  gap: 12px;
+  gap: 8px;
 }
 #actionPanel .speaker {
-  font-size: 12px;
+  font-size: 10px;
   color: #cc0000;
-}
-#actionPanel #oakChat > img {
-  margin-right: 20px;
 }
 #actionPanel #oakChat .bubble {
   cursor: pointer;
+  padding: 12px 14px;
+  background-color: #fafafa;
+  border: 2px solid lightgray;
+  border-radius: 12px;
 }
 #actionPanel #oakChat #chatOak {
-  min-height: 150px;
-  line-height: 26px;
+  min-height: 78px;
+  font-size: 13px;
+  line-height: 24px;
 }
 #actionPanel #trainerChat {
   justify-content: flex-end;
 }
+#actionPanel #trainerChat:has(#chatTrainer:empty) {
+  display: none;
+}
 #actionPanel #trainerChat > img {
-  margin-left: 20px;
+  width: 56px;
+  height: 56px;
 }
 #actionPanel #trainerChat .bubble {
   align-items: flex-end;
   text-align: end;
 }
 #actionPanel #trainerChat #chatTrainer p {
-  line-height: 22px;
+  font-size: 12px;
+  line-height: 20px;
 }
 #actionPanel #nameInput {
   width: 100%;
-  max-width: 250px;
-  height: 50px;
+  max-width: 260px;
+  height: 46px;
   padding: 0 10px;
   background-color: #e2e2e2;
   border: 2px solid lightgray;
+  border-radius: 8px;
   font-family: "Press Start 2P", monospace;
-  font-size: 14px;
+  font-size: 13px;
   text-transform: uppercase;
 }
 #actionPanel #answers {
-  min-height: 75px;
+  min-height: 60px;
   width: 100%;
   display: flex;
   flex-direction: row;
@@ -377,9 +447,11 @@ main .dataList dt {
   gap: 10px;
 }
 #actionPanel .option {
-  width: 140px;
-  min-height: 75px;
-  padding: 8px;
+  position: relative;
+  width: calc(33.333% - 7px);
+  min-width: 110px;
+  min-height: 64px;
+  padding: 10px 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -389,72 +461,115 @@ main .dataList dt {
   border: 2px solid lightgray;
   border-radius: 10px;
   cursor: pointer;
+  transition: border-color 0.12s ease, transform 0.12s ease;
 }
 #actionPanel .option:hover:not(:disabled) {
   border-color: #111111;
+  transform: translateY(-1px);
+}
+#actionPanel .option:active:not(:disabled) {
+  transform: translateY(1px);
 }
 #actionPanel .option:disabled {
   cursor: not-allowed;
   opacity: 0.45;
 }
 #actionPanel .option img {
-  width: 50px;
-  height: auto;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+#actionPanel .option[data-atajo]::before {
+  content: attr(data-atajo);
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 8px;
+  color: #888888;
+}
+@media (hover: none) {
+  #actionPanel .option[data-atajo]::before {
+    display: none;
+  }
 }
 #actionPanel .optionText {
   font-size: 10px;
   line-height: 14px;
   text-align: center;
 }
+#actionPanel .optionDetail {
+  font-size: 9px;
+  line-height: 12px;
+  color: #555555;
+  text-align: center;
+}
 #actionPanel .movimiento {
   width: calc(50% - 5px);
+  min-height: 72px;
   border-left: 10px solid var(--color-tipo, lightgray);
+}
+#actionPanel .movimiento.deEstado {
+  border-style: dashed;
+  border-left-style: solid;
+}
+#actionPanel .eficacia {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 8px;
+  color: #ffffff;
+  background-color: #777777;
+}
+#actionPanel .eficacia.super {
+  background-color: #e03c31;
+}
+#actionPanel .eficacia.poco {
+  background-color: #6b6b8c;
+}
+#actionPanel .eficacia.nulo {
+  background-color: #333333;
 }
 #actionPanel .accionEquipo {
   width: 100%;
-  min-height: 50px;
+  min-height: 48px;
+}
+#actionPanel .continuar {
+  width: 120px;
+  min-height: 52px;
+}
+#actionPanel .continuar img {
+  width: 32px;
+  height: 26px;
 }
 #actionPanel .companero img {
   image-rendering: pixelated;
 }
-#actionPanel .optionDetail {
+#actionPanel .ayudaTeclado {
   font-size: 8px;
-  color: #555555;
+  line-height: 14px;
+  color: #777777;
+  text-align: center;
+}
+@media (hover: none) {
+  #actionPanel .ayudaTeclado {
+    display: none;
+  }
 }
 @media (max-width: 760px) {
-  #actionPanel {
-    min-height: 0;
-  }
   #actionPanel .chatArea > img {
-    width: 60px;
-    height: 60px;
-  }
-  #actionPanel #oakChat > img {
-    margin-right: 12px;
-  }
-  #actionPanel #trainerChat > img {
-    margin-left: 12px;
+    width: 52px;
+    height: 52px;
   }
   #actionPanel #oakChat #chatOak {
-    min-height: 120px;
+    min-height: 72px;
     font-size: 12px;
-    line-height: 22px;
+    line-height: 21px;
   }
   #actionPanel .option {
-    width: calc(33% - 7px);
-    min-width: 90px;
+    min-width: 92px;
   }
-  #actionPanel .movimiento {
-    width: calc(50% - 5px);
-  }
-  #actionPanel .accionEquipo {
-    width: 100%;
-  }
-}
-
-#actionPanel .movimiento.deEstado {
-  border-style: dashed;
-  border-left-style: solid;
 }
 
 .pokemonCard {
@@ -591,6 +706,39 @@ main .dataList dt {
     transition: none;
   }
 }
+.pokemonCard {
+  min-height: 0;
+}
+.pokemonCard .fichaVacia {
+  display: none;
+  font-size: 10px;
+  line-height: 18px;
+  color: #666666;
+  text-align: center;
+}
+.pokemonCard.vacia .fichaVacia {
+  display: block;
+}
+.pokemonCard.vacia#cardRival {
+  display: none;
+}
+@media (max-width: 760px) {
+  .pokemonCard.vacia {
+    display: none;
+  }
+}
+.pokemonCard.vacia .cardTitle,
+.pokemonCard.vacia .healthBar,
+.pokemonCard.vacia .expBar,
+.pokemonCard.vacia .equipoIndicador,
+.pokemonCard.vacia .infoContainer {
+  display: none;
+}
+.pokemonCard .imageCard {
+  width: 120px;
+  height: 120px;
+}
+
 #modal {
   width: min(420px, 100% - 32px);
   padding: 30px;
@@ -780,8 +928,7 @@ main .dataList dt {
 .escena {
   position: relative;
   width: 100%;
-  height: 220px;
-  margin-bottom: 20px;
+  height: 210px;
   border: 2px solid lightgray;
   border-radius: 12px;
   overflow: hidden;

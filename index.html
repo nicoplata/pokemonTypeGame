@@ -9,87 +9,87 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./img/icono-192.png" type="image/png">
     <link rel="apple-touch-icon" href="./img/apple-touch-icon.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="preload" href="./fonts/press-start-2p.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="./styles/styles.css">
 </head>
 <body>
     <div id="page">
         <header>
-            <img src="./img/pokemonLogo.png" alt="Logo de Pokémon">
-            <h1>POKéDEX</h1>
+            <img src="./img/pokemonLogo.png" alt="Pokémon">
+            <h1>TYPE GAME</h1>
             <div class="botonesCabecera">
                 <button type="button" id="botonInstalar" class="botonCabecera" hidden>⬇ INSTALAR</button>
+                <button type="button" id="botonTexto" class="botonCabecera" title="Velocidad del texto">» TEXTO: NORMAL</button>
                 <button type="button" id="botonSonido" class="botonCabecera" aria-pressed="false">♪ SONIDO</button>
             </div>
         </header>
 
-        <nav aria-label="Pokédex">
-            <div id="pokedexList">
-                <h2 class="listTitle">POKéDEX</h2>
+        <main id="juego">
+            <section class="card" id="actionPanel" aria-label="Panel de juego">
+                <div id="escena" class="escena" hidden aria-hidden="true">
+                    <div class="ladoEscena" data-lado="rival">
+                        <div class="cajaSalud">
+                            <p><span data-e="nombre"></span> <span class="cajaNivel" data-e="nivel"></span> <span class="chipEstado" data-e="estado" hidden></span></p>
+                            <div class="healthBar"><div class="healthFill" data-e="barra"></div></div>
+                            <p class="cajaNumeros" data-e="salud"></p>
+                        </div>
+                        <div class="plataforma"><img class="spriteEscena" data-e="sprite" alt=""></div>
+                    </div>
+                    <div class="ladoEscena" data-lado="jugador">
+                        <div class="plataforma"><img class="spriteEscena" data-e="sprite" alt=""></div>
+                        <div class="cajaSalud">
+                            <p><span data-e="nombre"></span> <span class="cajaNivel" data-e="nivel"></span> <span class="chipEstado" data-e="estado" hidden></span></p>
+                            <div class="healthBar"><div class="healthFill" data-e="barra"></div></div>
+                            <p class="cajaNumeros" data-e="salud"></p>
+                        </div>
+                    </div>
+                </div>
+                <div id="chat">
+                    <div class="chatArea" id="oakChat">
+                        <img src="./img/profesorOak.png" alt="Profesor Oak">
+                        <div class="bubble" title="Tocá para avanzar">
+                            <p class="speaker">PROFESOR</p>
+                            <p id="chatOak"></p>
+                            <p id="anuncio" class="srOnly" aria-live="polite"></p>
+                        </div>
+                    </div>
+                    <div class="chatArea" id="trainerChat">
+                        <div class="bubble">
+                            <p class="speaker">ENTRENADOR</p>
+                            <div id="chatTrainer"></div>
+                        </div>
+                        <img src="./img/ashKetchum.png" alt="Entrenador">
+                    </div>
+                </div>
+                <div id="answers"></div>
+                <p class="ayudaTeclado" aria-hidden="true">Teclado: <kbd>Enter</kbd> continuar · <kbd>1</kbd>-<kbd>9</kbd> elegir opción</p>
+            </section>
+        </main>
+
+        <aside id="lateral" aria-label="Entrenador y Pokédex">
+            <section class="card" id="trainerCard" aria-label="Datos del entrenador">
+                <h2 class="cardTitle">ENTRENADOR</h2>
+                <dl class="dataList">
+                    <div><dt>NOMBRE</dt><dd id="trainerName">-</dd></div>
+                    <div><dt>EQUIPO</dt><dd id="trainerPokemon">-</dd></div>
+                    <div><dt>RÉCORD</dt><dd id="trainerRecord">0V - 0D</dd></div>
+                    <div><dt>MEDALLAS</dt><dd id="trainerMedallas">0/8</dd></div>
+                </dl>
+            </section>
+
+            <details id="pokedexList" class="card" open>
+                <summary class="listTitle">POKéDEX</summary>
                 <label class="listHint" id="listHint" for="busquedaLateral">Buscá por nombre, número o tipo</label>
                 <input id="busquedaLateral" class="busqueda" type="search" autocomplete="off" placeholder="pikachu, 25, fuego..." disabled>
                 <p class="sinResultados" id="vacioLateral" hidden>Sin resultados</p>
                 <ul id="listaLateral" class="listaPokemon"></ul>
-            </div>
-        </nav>
+            </details>
+        </aside>
 
-        <main>
-            <div class="column">
-                <section class="card" id="trainerCard" aria-label="Datos del entrenador">
-                    <h2 class="cardTitle">ENTRENADOR</h2>
-                    <dl class="dataList">
-                        <div><dt>NOMBRE</dt><dd id="trainerName">-</dd></div>
-                        <div><dt>EQUIPO</dt><dd id="trainerPokemon">-</dd></div>
-                        <div><dt>RÉCORD</dt><dd id="trainerRecord">0V - 0D</dd></div>
-                        <div><dt>MEDALLAS</dt><dd id="trainerMedallas">0/8</dd></div>
-                    </dl>
-                </section>
-
-                <section class="card" id="actionPanel" aria-label="Panel de acciones">
-                    <div id="escena" class="escena" hidden aria-hidden="true">
-                        <div class="ladoEscena" data-lado="rival">
-                            <div class="cajaSalud">
-                                <p><span data-e="nombre"></span> <span class="cajaNivel" data-e="nivel"></span> <span class="chipEstado" data-e="estado" hidden></span></p>
-                                <div class="healthBar"><div class="healthFill" data-e="barra"></div></div>
-                                <p class="cajaNumeros" data-e="salud"></p>
-                            </div>
-                            <div class="plataforma"><img class="spriteEscena" data-e="sprite" alt=""></div>
-                        </div>
-                        <div class="ladoEscena" data-lado="jugador">
-                            <div class="plataforma"><img class="spriteEscena" data-e="sprite" alt=""></div>
-                            <div class="cajaSalud">
-                                <p><span data-e="nombre"></span> <span class="cajaNivel" data-e="nivel"></span> <span class="chipEstado" data-e="estado" hidden></span></p>
-                                <div class="healthBar"><div class="healthFill" data-e="barra"></div></div>
-                                <p class="cajaNumeros" data-e="salud"></p>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="chat">
-                        <div class="chatArea" id="oakChat">
-                            <img src="./img/profesorOak.png" alt="Profesor Oak">
-                            <div class="bubble">
-                                <p class="speaker">PROFESOR</p>
-                                <p id="chatOak"></p>
-                                <p id="anuncio" class="srOnly" aria-live="polite"></p>
-                            </div>
-                        </div>
-                        <div class="chatArea" id="trainerChat">
-                            <div class="bubble">
-                                <p class="speaker">ENTRENADOR</p>
-                                <div id="chatTrainer"></div>
-                            </div>
-                            <img src="./img/ashKetchum.png" alt="Entrenador">
-                        </div>
-                    </div>
-                    <div id="answers"></div>
-                </section>
-            </div>
-
-            <div class="column">
-                <section class="card pokemonCard" id="cardJugador" aria-label="Tu Pokémon">
+        <aside id="fichas" aria-label="Fichas de los Pokémon">
+                <section class="card pokemonCard vacia" id="cardJugador" aria-label="Tu Pokémon">
                     <h2 class="cardTitle" data-campo="nombre">-</h2>
+                    <p class="fichaVacia">Acá vas a ver a tu Pokémon. Tocá uno en la Pokédex para ver sus datos.</p>
                     <div class="healthBar" aria-hidden="true"><div class="healthFill" data-campo="barra"></div></div>
                     <div class="expBar" title="Experiencia"><div class="expFill" data-campo="exp"></div></div>
                     <ul class="equipoIndicador" data-campo="equipo" aria-label="Equipo"></ul>
@@ -106,9 +106,9 @@
                         </dl>
                     </div>
                 </section>
-
-                <section class="card pokemonCard" id="cardRival" aria-label="Pokémon rival">
+                <section class="card pokemonCard vacia" id="cardRival" aria-label="Pokémon rival">
                     <h2 class="cardTitle" data-campo="nombre">-</h2>
+                    <p class="fichaVacia">Acá vas a ver al rival.</p>
                     <div class="healthBar" aria-hidden="true"><div class="healthFill" data-campo="barra"></div></div>
                     <ul class="equipoIndicador" data-campo="equipo" aria-label="Equipo"></ul>
                     <div class="infoContainer">
@@ -124,8 +124,7 @@
                         </dl>
                     </div>
                 </section>
-            </div>
-        </main>
+        </aside>
     </div>
 
     <dialog id="selector" aria-labelledby="selectorTitulo">

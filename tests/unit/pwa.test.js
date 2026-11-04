@@ -20,7 +20,7 @@ const lista = [...sw.match(/const ARCHIVOS = \[([\s\S]*?)\]/)[1].matchAll(/'([^'
 describe('service worker', () => {
     it('guarda todos los módulos, imágenes y datos del juego', () => {
         const necesarios = [
-            './', './index.html', './manifest.webmanifest', './styles/styles.css', './data/pokedex.json',
+            './', './index.html', './manifest.webmanifest', './styles/styles.css', './data/pokedex.json', './fonts/press-start-2p.woff2',
             ...archivosEn('src', '.js'), ...archivosEn('img', '.png')
         ]
         expect([...lista].sort()).toEqual([...new Set(necesarios)].sort())

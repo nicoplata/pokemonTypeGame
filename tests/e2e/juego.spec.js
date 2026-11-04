@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import {
-    armarEquipoNuevo, avanzar, botones, continuar, elegirModo, elegirPokemon, esperarTexto, introducir, llegarAlCombate,
+    abrirPokedex, armarEquipoNuevo, avanzar, botones, continuar, elegirModo, elegirPokemon, esperarTexto, introducir, llegarAlCombate,
     pelear, prepararPagina, textoOak
 } from './utilidades.js'
 
@@ -33,6 +33,8 @@ test('valida el nombre y lo muestra como texto', async ({ page }) => {
 test('la Pokédex lateral muestra datos y se bloquea al elegir inicial', async ({ page }) => {
     const errores = await prepararPagina(page)
     await esperarTexto(page, 'Bienvenido')
+    await expect(page.locator('#cardJugador .fichaVacia')).toBeAttached()
+    await abrirPokedex(page)
     await page.locator('#listaLateral button[data-pokemon="7"]').click()
     await expect(page.locator('#cardJugador [data-campo="nombre"]')).toHaveText('SQUIRTLE')
     await llegarAlCombate(page, { inicial: 'charmander', rival: 'chikorita' })
@@ -44,8 +46,12 @@ test('la Pokédex lateral muestra datos y se bloquea al elegir inicial', async (
     await expect(page.locator('#cardJugador [data-campo="salud"]')).toHaveText('25/25')
     await expect(page.locator('#cardJugador [data-campo="tipo"]')).toHaveText('FUEGO')
     await expect(page.locator('#cardJugador [data-campo="nivel"]')).toHaveText('8')
-    await expect(page.locator('#answers button.movimiento')).toHaveText(['ARAÑAZONORMAL 35/35', 'GRUÑIDONORMAL 40/40', 'ASCUASFUEGO 25/25'])
-    await expect(page.locator('#answers button.movimiento.deEstado')).toHaveText(['GRUÑIDONORMAL 40/40'])
+    // Cada botón muestra tipo, PP, potencia y precisión, y si es eficaz contra el rival.
+    await expect(page.locator('#answers button.movimiento')).toHaveText([
+        'ARAÑAZONORMAL 35/35POT 40 · 100%', 'GRUÑIDONORMAL 40/40ESTADO', 'x2ASCUASFUEGO 25/25POT 40 · 100%'
+    ])
+    await expect(page.locator('#answers button.movimiento.deEstado')).toHaveText(['GRUÑIDONORMAL 40/40ESTADO'])
+    await expect(page.locator('#answers button.movimiento .eficacia.super')).toHaveText('x2')
     await expect(page.locator('#cardJugador [data-campo="estado"]')).toHaveText('-')
     expect(errores).toEqual([])
 })
@@ -135,6 +141,7 @@ test('el texto aparece letra por letra y tocar el globo lo completa', async ({ p
 test('la Pokédex lateral busca entre los 251', async ({ page }) => {
     const errores = await prepararPagina(page)
     await esperarTexto(page, 'Bienvenido')
+    await abrirPokedex(page)
     await expect(page.locator('#listaLateral li:not([hidden])')).toHaveCount(251)
     await page.locator('#busquedaLateral').fill('pika')
     await expect(page.locator('#listaLateral li:not([hidden])')).toHaveCount(1)
@@ -423,5 +430,44 @@ test('dos jugadores en la misma pantalla', async ({ page }) => {
     // El duelo no cambia el récord ni el equipo guardado.
     await expect(page.locator('#trainerRecord')).toHaveText('0V - 0D')
     expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pokemonTypeGame')).equipo)).toEqual([])
+    expect(errores).toEqual([])
+})
+
+test('atajos de teclado, globo que avanza y velocidad del texto', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    const errores = await prepararPagina(page)
+    await esperarTexto(page, '¡Bienvenido a mi laboratorio!')
+    // Tocar el globo con el texto completo avanza.
+    await page.locator('#oakChat .bubble').click()
+    await esperarTexto(page, 'llamas')
+    await page.locator('#nameInput').fill('ash')
+    await page.locator('#nameInput').press('Enter')
+    await esperarTexto(page, 'conocerte')
+    // Enter avanza aunque el foco no esté en el botón.
+    await page.locator('#chatOak').click({ position: { x: 1, y: 1 } })
+    await page.locator('body').press('Enter')
+    await esperarTexto(page, 'camino')
+
+    // Velocidad del texto: se alterna y se recuerda.
+    const boton = page.locator('#botonTexto')
+    await expect(boton).toHaveText('» TEXTO: NORMAL')
+    await boton.click()
+    await expect(boton).toHaveText('» TEXTO: RÁPIDO')
+    await boton.click()
+    await expect(boton).toHaveText('» TEXTO: INSTANT.')
+    // Con el foco fuera de los botones, Enter avanza el diálogo.
+    await page.evaluate(() => document.activeElement.blur())
+    await page.keyboard.press('Enter')
+    await esperarTexto(page, 'ligera')
+    await page.keyboard.press('Enter')
+    await esperarTexto(page, 'Qué quieres hacer')
+    // Con texto instantáneo el mensaje aparece completo enseguida.
+    await expect(textoOak(page)).toContainText('alguien más.')
+
+    // Los números eligen la opción.
+    await page.keyboard.press('2')
+    await esperarTexto(page, 'eliges')
+    await page.reload()
+    await expect(page.locator('#botonTexto')).toHaveText('» TEXTO: INSTANT.')
     expect(errores).toEqual([])
 })

@@ -1,5 +1,13 @@
 #trainerCard {
+    align-items: stretch;
+
+    .cardTitle {
+        text-align: center;
+    }
+
     .dataList {
-        margin: 10px;
+        dd {
+            font-size: 10px;
+        }
     }
 }

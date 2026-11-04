@@ -2,8 +2,8 @@
 
 import { spritePokemon } from '../datos/juego.js'
 import { TEXTOS } from '../datos/textos.js'
-import { FORCEJEO, movimientosDisponibles } from '../motor/combate.js'
-import { activo, disponiblesParaCambio, elegirAccionIA, elegirReemplazoIA } from '../motor/equipos.js'
+import { FORCEJEO, danioFijo, efectividad, movimientosDisponibles } from '../motor/combate.js'
+import { activo, disponiblesParaCambio, elegirAccionIA, elegirReemplazoIA, otroLado } from '../motor/equipos.js'
 import { decir, decirEntrenador } from '../ui/dialogo.js'
 import { nombreTipo } from '../ui/fichas.js'
 
@@ -14,7 +14,21 @@ export function crearControladorIA (pokedex, { azar = Math.random, aleatoriedad 
     }
 }
 
-function opcionesMovimientos (pokedex, luchador) {
+const FRACCIONES = { 0.25: '¼', 0.5: '½' }
+
+// Insignia con la eficacia del movimiento contra el Pokémon de enfrente.
+export function insigniaDeEficacia (mov, enfrente, atacante = null) {
+    if (!enfrente || mov.clase === 'estado') return null
+    const multiplicador = efectividad(mov.tipo, enfrente.tipos)
+    if (multiplicador === 0) return { texto: 'x0', clase: 'nulo', titulo: 'No le afecta' }
+    // El daño fijo no depende de la eficacia (solo de la inmunidad).
+    if (atacante && danioFijo(atacante, enfrente, mov) !== null) return null
+    if (multiplicador > 1) return { texto: `x${multiplicador}`, clase: 'super', titulo: 'Súper eficaz' }
+    if (multiplicador < 1) return { texto: `x${FRACCIONES[multiplicador] ?? multiplicador}`, clase: 'poco', titulo: 'No es muy eficaz' }
+    return null
+}
+
+function opcionesMovimientos (pokedex, luchador, enfrente) {
     if (movimientosDisponibles(luchador).length === 0) {
         return [{ texto: 'FORCEJEO', detalle: 'SIN PP', clase: 'movimiento tipo-normal', valor: FORCEJEO }]
     }
@@ -28,6 +42,10 @@ function opcionesMovimientos (pokedex, luchador) {
         return {
             texto: mov.nombre.toUpperCase(),
             detalle: `${nombreTipo(mov.tipo)} ${m.pp}/${m.ppMax}`,
+            extra: deEstado
+                ? 'ESTADO'
+                : `POT ${mov.potencia ?? '-'} · ${mov.precision ? `${mov.precision}%` : 'NO FALLA'}`,
+            insignia: insigniaDeEficacia(mov, enfrente, luchador),
             titulo: descripcion,
             clase: `movimiento tipo-${mov.tipo}${deEstado ? ' deEstado' : ' deDanio'}`,
             deshabilitado: m.pp <= 0,
@@ -68,7 +86,7 @@ export function crearControladorHumano (pokedex, { prefijo = '', privado = false
         for (;;) {
             const companeros = disponiblesParaCambio(combate, lado)
             const opciones = [
-                ...opcionesMovimientos(pokedex, yo),
+                ...opcionesMovimientos(pokedex, yo, activo(combate, otroLado(lado))),
                 { texto: 'EQUIPO', detalle: 'CAMBIAR', clase: 'accionEquipo', deshabilitado: companeros.length === 0, valor: 'equipo' }
             ]
             const eleccion = await preguntar(primerTurno ? TEXTOS.primerAtaque : TEXTOS.siguienteAtaque, opciones)
