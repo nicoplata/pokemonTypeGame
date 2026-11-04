@@ -18,7 +18,16 @@ export const TEXTOS = {
     siguienteAtaque: '¿Qué movimiento usarás ahora?',
     cargando: 'Consultando la Pokédex...',
     errorRed: 'No pude cargar la Pokédex. Revisá tu conexión e intentá de nuevo.',
-    menu: (nombre) => `¿Qué quieres hacer, ${nombre}? En la CAMPAÑA enfrentas a los entrenadores en orden; en el COMBATE LIBRE eliges a tu rival.`,
+    pasarDispositivo: (nombre) => `Turno de ${nombre}. Pasale el dispositivo y que el otro jugador no mire.`,
+    preguntaJugador2: '¿Cómo se llama el segundo jugador?',
+    nombreRepetido: 'Los dos jugadores necesitan nombres distintos.',
+    elegirNivelDuelo: '¿A qué nivel combatirán los equipos?',
+    armaTuEquipo: (nombre) => `${nombre}, arma tu equipo de tres.`,
+    elegirParaDuelo: (nombre, numero) => `${nombre}: elige tu Pokémon número ${numero}.`,
+    tituloDuelo: (nombre) => `POKéMON DE ${nombre}`,
+    comienzaDuelo: (uno, dos) => `¡Comienza el combate entre ${uno} y ${dos}!`,
+    ganaDuelo: (nombre) => `¡${nombre} ganó el combate!`,
+    menu: (nombre) => `¿Qué quieres hacer, ${nombre}? En la CAMPAÑA enfrentas a los entrenadores en orden, en el COMBATE LIBRE eliges a tu rival y en DOS JUGADORES combates con alguien más.`,
     desafio: (entrenador, indice) => indice === 8
         ? `¡Llegó el gran momento! El ${entrenador.titulo} ${entrenador.nombre} te espera.`
         : `Tu próximo desafío: ${entrenador.nombre}, ${entrenador.titulo}. Si ganas, recibirás la ${entrenador.medalla}.`,

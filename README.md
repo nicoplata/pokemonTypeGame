@@ -1,20 +1,27 @@
 # Pokémon Type Game
 
-Juego de combate por turnos en el navegador. El Profesor Oak te recibe, elegís
-tu Pokémon y te enfrentás a un rival. Podés usar cualquiera de los 251 Pokémon
-de las dos primeras generaciones: los iniciales clásicos, cualquier otro
-buscándolo en la Pokédex (por nombre, número o tipo), o un rival al azar. Los datos de los Pokémon y sus movimientos
-vienen de [PokéAPI](https://pokeapi.co/).
+Juego de combate Pokémon por turnos en el navegador. El Profesor Oak te
+recibe, armás un equipo de tres y combatís en una campaña contra nueve
+entrenadores, en combates libres o contra otra persona en la misma pantalla.
+Podés usar cualquiera de los 251 Pokémon de las dos primeras generaciones,
+con sus movimientos reales, estados alterados, experiencia y evoluciones.
+Los datos de los Pokémon y sus movimientos vienen de
+[PokéAPI](https://pokeapi.co/).
 
 ## Cómo jugar
 
-1. Abrí el juego publicado en GitHub Pages, o levantalo en tu compu (ver abajo).
+1. Abrí el juego publicado (Netlify o GitHub Pages), o levantalo en tu compu
+   (ver abajo).
 2. Ingresá tu nombre y elegí un modo:
    - **Campaña**: enfrentás en orden a ocho entrenadores especializados en un
      tipo (cada victoria da una medalla) y al campeón final. Los equipos
      rivales evolucionan y suben de nivel con el tuyo, y los últimos
      entrenadores improvisan menos. El progreso se guarda.
    - **Combate libre**: elegís a tu rival (o al azar).
+   - **Dos jugadores**: dos personas en la misma pantalla. Cada una arma su
+     equipo al nivel elegido y, en cada turno, elige su acción sin que la
+     otra mire (el juego pide pasar el dispositivo entre elección y
+     elección). No suma experiencia ni cambia el récord.
 3. Armá un equipo de tres: tu inicial y dos compañeros (sugeridos, al azar o
    buscados en la Pokédex). El rival también tiene tres.
 4. En cada turno elegí un movimiento o cambiá de Pokémon con **EQUIPO**. Los
@@ -64,11 +71,12 @@ Cada vez que cae un Pokémon rival, el que lo derrotó gana experiencia y el
 resto del equipo con vida recibe la mitad. Al subir de nivel mejoran las
 estadísticas y pueden aprender movimientos nuevos (si ya conocen cuatro,
 elegís cuál olvidar). Al terminar el combate, los que llegaron al nivel
-necesario evolucionan (podés detenerlo). Los rivales tienen el nivel promedio
-de tu equipo.
+necesario evolucionan (podés detenerlo). En el combate libre, los rivales
+tienen el nivel promedio de tu equipo.
 
-Tu equipo, tus victorias y tus derrotas se guardan en el navegador
-(`localStorage`); en la próxima partida podés seguir con el mismo equipo.
+Tu equipo, tus victorias, tus derrotas y tus medallas se guardan en el
+navegador (`localStorage`); en la próxima partida podés seguir con el mismo
+equipo.
 
 ## Desarrollo
 

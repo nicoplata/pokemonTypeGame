@@ -86,7 +86,9 @@ for (const [inicial, rival, ataque] of combinaciones) {
         await esperarTexto(page, 'Qué quieres hacer, ASH')
         await expect(page.locator('#listaLateral button').first()).toBeEnabled()
         await expect(page.locator('#cardRival [data-campo="nombre"]')).toHaveText('-')
-        await expect(botones(page)).toHaveText(['CAMPAÑAMEDALLAS 0/8', 'COMBATE LIBREELEGÍS RIVAL', 'NUEVO EQUIPOARMAR OTRO'])
+        await expect(botones(page)).toHaveText([
+            'CAMPAÑAMEDALLAS 0/8', 'COMBATE LIBREELEGÍS RIVAL', 'DOS JUGADORESMISMA PANTALLA', 'NUEVO EQUIPOARMAR OTRO'
+        ])
         // El siguiente combate libre usa el mismo equipo sin preguntar.
         await elegirModo(page, 'COMBATE LIBRE')
         await esperarTexto(page, 'listo')
@@ -372,4 +374,54 @@ test('campaña completa: el menú muestra al campeón', async ({ page }) => {
     await elegirModo(page, 'CAMPAÑA')
     await botones(page).filter({ hasText: 'SEGUIR' }).click()
     await esperarTexto(page, 'quiere la revancha')
+})
+
+test('dos jugadores en la misma pantalla', async ({ page }) => {
+    const errores = await prepararPagina(page)
+    await introducir(page)
+    await elegirModo(page, 'DOS JUGADORES')
+    await esperarTexto(page, 'segundo jugador')
+    // No se puede repetir el nombre del primer jugador.
+    await page.locator('#nameInput').fill('ash')
+    await page.locator('#nameInput').press('Enter')
+    await expect(page.locator('#modalText')).toHaveText('Los dos jugadores necesitan nombres distintos.')
+    await page.locator('#modalButtons button').click()
+    await page.locator('#nameInput').fill('lucas')
+    await page.locator('#nameInput').press('Enter')
+
+    await esperarTexto(page, 'A qué nivel')
+    await expect(botones(page)).toHaveText(['NIVEL 10', 'NIVEL 50', 'NIVEL 100'])
+    await botones(page).filter({ hasText: 'NIVEL 50' }).click()
+    for (const nombre of ['ASH', 'LUCAS']) {
+        await avanzar(page, `${nombre}, arma tu equipo`)
+        for (const numero of [1, 2, 3]) {
+            await esperarTexto(page, `${nombre}: elige tu Pokémon número ${numero}`)
+            await elegirPokemon(page, 'AL AZAR')
+        }
+    }
+    await avanzar(page, 'Comienza el combate entre ASH y LUCAS')
+    await expect(page.locator('#cardJugador [data-campo="nivel"]')).toHaveText('50')
+    await expect(page.locator('#cardRival [data-campo="nivel"]')).toHaveText('50')
+
+    // Cada uno elige en su turno, después de pasar el dispositivo.
+    await esperarTexto(page, 'Turno de ASH')
+    await botones(page).filter({ hasText: 'LISTO' }).click()
+    await esperarTexto(page, 'ASH: ¿Qué movimiento usarás primero?')
+    await page.locator('#answers button.movimiento.deDanio').first().click()
+    await esperarTexto(page, 'Turno de LUCAS')
+    // La elección de ASH no se anuncia en pantalla.
+    await expect(page.locator('#chatTrainer')).toHaveText('')
+    await botones(page).filter({ hasText: 'LISTO' }).click()
+    await esperarTexto(page, 'LUCAS: ¿Qué movimiento usarás primero?')
+    await page.locator('#answers button.movimiento.deDanio').first().click()
+    await expect(textoOak(page)).toContainText(/ de (ASH|LUCAS) usó /)
+
+    await pelear(page)
+    await expect(page.locator('#modalTitle')).toHaveText(/¡GANÓ (ASH|LUCAS)!/)
+    await page.locator('#modalButtons button').click()
+    await esperarTexto(page, 'Qué quieres hacer')
+    // El duelo no cambia el récord ni el equipo guardado.
+    await expect(page.locator('#trainerRecord')).toHaveText('0V - 0D')
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('pokemonTypeGame')).equipo)).toEqual([])
+    expect(errores).toEqual([])
 })

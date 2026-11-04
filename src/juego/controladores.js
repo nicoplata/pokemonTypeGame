@@ -49,13 +49,21 @@ function opcionesEquipo (combate, lado) {
     })
 }
 
-// `prefijo` se antepone a las preguntas (por ejemplo, el nombre de quien
-// juega en el modo de dos jugadores).
-export function crearControladorHumano (pokedex, { prefijo = '' } = {}) {
+// Opciones para el modo de dos jugadores:
+//   prefijo: se antepone a las preguntas (el nombre de quien juega).
+//   privado: antes de cada elección pide pasar el dispositivo, para que
+//            la otra persona no vea qué se elige.
+//   silencioso: no anuncia la elección en el globo del entrenador.
+export function crearControladorHumano (pokedex, { prefijo = '', privado = false, silencioso = false } = {}) {
     let primerTurno = true
     const preguntar = (texto, opciones) => decir(prefijo ? `${prefijo}: ${texto}` : texto, opciones)
+    const anunciar = (texto) => { if (!silencioso) decirEntrenador(texto) }
+    const pasarDispositivo = async () => {
+        if (privado) await decir(TEXTOS.pasarDispositivo(prefijo), [{ texto: 'LISTO', detalle: prefijo, valor: true }])
+    }
 
     async function elegirAccion (combate, lado) {
+        await pasarDispositivo()
         const yo = activo(combate, lado)
         for (;;) {
             const companeros = disponiblesParaCambio(combate, lado)
@@ -72,18 +80,19 @@ export function crearControladorHumano (pokedex, { prefijo = '' } = {}) {
                 ])
                 if (indice === 'volver') continue
                 primerTurno = false
-                decirEntrenador(`¡Vuelve, ${yo.nombre}!`)
+                anunciar(`¡Vuelve, ${yo.nombre}!`)
                 return { tipo: 'cambio', indice }
             }
 
             primerTurno = false
             const nombre = eleccion === FORCEJEO ? 'FORCEJEO' : pokedex.movimiento(yo.movimientos[eleccion].id).nombre.toUpperCase()
-            decirEntrenador(`¡${yo.nombre}, usa ${nombre}!`)
+            anunciar(`¡${yo.nombre}, usa ${nombre}!`)
             return { tipo: 'movimiento', eleccion }
         }
     }
 
     async function elegirReemplazo (combate, lado) {
+        await pasarDispositivo()
         return preguntar(TEXTOS.elegirReemplazo, opcionesEquipo(combate, lado))
     }
 

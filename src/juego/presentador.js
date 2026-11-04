@@ -19,7 +19,8 @@ function sonidoDeGolpe ({ multiplicador = 1, criticos = 0 }) {
 
 // `cards` = { jugador, rival }; `ocultarEquipo` = { rival: true } oculta
 // qué Pokémon tiene ese lado hasta que los envía.
-export function crearPresentador (cards, { ocultarEquipo = {} } = {}) {
+// `mensajes` = { sufijos, entrenadores } para nombrar a cada lado (ver mensajes.js).
+export function crearPresentador (cards, { ocultarEquipo = {}, mensajes = {} } = {}) {
     function mostrarEquipoDe (combate, lado) {
         mostrarEquipo(cards[lado], combate[lado].equipo, combate[lado].activo, { ocultar: ocultarEquipo[lado] })
     }
@@ -110,7 +111,7 @@ export function crearPresentador (cards, { ocultarEquipo = {} } = {}) {
     }
 
     async function mostrarEventos (combate, eventos) {
-        for (const paso of construirPasos(eventos)) {
+        for (const paso of construirPasos(eventos, mensajes)) {
             for (const evento of paso.eventos) await aplicarEvento(combate, evento)
             await decir(paso.texto)
         }

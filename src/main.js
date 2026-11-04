@@ -98,9 +98,11 @@ async function cargarPokedexConReintento () {
 //  Pasos de la partida
 // ============================================================
 
-async function pedirNombre () {
+// Pide un nombre en el globo del entrenador. `alEscribir` recibe el texto
+// mientras se escribe.
+async function pedirNombre ({ pregunta = TEXTOS.preguntaNombre, valorInicial = progreso.nombre, alEscribir, validar } = {}) {
     limpiarOpciones()
-    await escribir(TEXTOS.preguntaNombre)
+    await escribir(pregunta)
 
     const formulario = document.createElement('form')
     formulario.id = 'nameForm'
@@ -113,13 +115,11 @@ async function pedirNombre () {
     campoNombre.type = 'text'
     campoNombre.maxLength = 12
     campoNombre.autocomplete = 'off'
-    campoNombre.value = progreso.nombre
+    campoNombre.value = valorInicial
     formulario.append(etiqueta, campoNombre)
     mostrarEnEntrenador(formulario)
 
-    campoNombre.addEventListener('input', () => {
-        ui.trainerName.textContent = campoNombre.value.trim().toUpperCase() || '-'
-    })
+    if (alEscribir) campoNombre.addEventListener('input', () => alEscribir(campoNombre.value.trim().toUpperCase()))
 
     for (;;) {
         const enviado = new Promise((resolve) => {
@@ -134,11 +134,12 @@ async function pedirNombre () {
         limpiarOpciones()
 
         const nombre = campoNombre.value.trim().toUpperCase()
-        if (nombre) {
+        const error = !nombre ? TEXTOS.nombreInvalido : validar?.(nombre)
+        if (!error) {
             mostrarEnEntrenador()
             return nombre
         }
-        await modal({ icono: '!', titulo: '¡ATENCIÓN!', texto: TEXTOS.nombreInvalido, botones: [{ texto: 'ACEPTAR', valor: true }] })
+        await modal({ icono: '!', titulo: '¡ATENCIÓN!', texto: error, botones: [{ texto: 'ACEPTAR', valor: true }] })
     }
 }
 
@@ -372,6 +373,68 @@ async function jugarCampania () {
     await mostrarResultado(gano, resumen)
 }
 
+// ---------- Dos jugadores ----------
+
+const NIVELES_DUELO = [10, 50, 100]
+
+async function armarEquipoDuelo (nombre, nivel) {
+    await decir(TEXTOS.armaTuEquipo(nombre))
+    const equipo = []
+    while (equipo.length < TAMANIO_EQUIPO) {
+        const ids = equipo.map((l) => l.id)
+        const id = await elegirPokemon({
+            pregunta: TEXTOS.elegirParaDuelo(nombre, equipo.length + 1),
+            sugeridos: sugerencias(3, ids),
+            titulo: TEXTOS.tituloDuelo(nombre),
+            permitirAzar: true,
+            excluir: ids
+        })
+        equipo.push(crear(id, nivel))
+    }
+    return equipo
+}
+
+async function dosJugadores () {
+    const uno = estado.nombre
+    const dos = await pedirNombre({
+        pregunta: TEXTOS.preguntaJugador2,
+        valorInicial: '',
+        validar: (nombre) => (nombre === uno ? TEXTOS.nombreRepetido : null)
+    })
+    const nivel = await decir(TEXTOS.elegirNivelDuelo, NIVELES_DUELO.map((n) => ({ texto: `NIVEL ${n}`, valor: n })))
+
+    // Los equipos del duelo son aparte: no usan ni modifican el equipo guardado.
+    const equipoUno = await armarEquipoDuelo(uno, nivel)
+    const equipoDos = await armarEquipoDuelo(dos, nivel)
+
+    const mensajes = { sufijos: { jugador: ` de ${uno}`, rival: ` de ${dos}` }, entrenadores: { jugador: uno, rival: dos } }
+    const combate = crearCombate(equipoUno, equipoDos)
+    const presentador = crearPresentador(ui.cards, { mensajes })
+    await decir(TEXTOS.comienzaDuelo(uno, dos))
+
+    iniciarMusica('combate')
+    const ganador = await jugarCombate({
+        pokedex: estado.pokedex,
+        combate,
+        presentador,
+        controladores: {
+            jugador: crearControladorHumano(estado.pokedex, { prefijo: uno, privado: true, silencioso: true }),
+            rival: crearControladorHumano(estado.pokedex, { prefijo: dos, privado: true, silencioso: true })
+        }
+    })
+    detenerMusica()
+    reproducir('victoria')
+    const nombreGanador = ganador === 'jugador' ? uno : dos
+    await decir(TEXTOS.ganaDuelo(nombreGanador))
+    iniciarMusica('menu')
+    await modal({
+        icono: '★',
+        titulo: `¡GANÓ ${nombreGanador}!`,
+        texto: TEXTOS.ganaDuelo(nombreGanador),
+        botones: [{ texto: 'CONTINUAR', valor: true }]
+    })
+}
+
 // ---------- Menú ----------
 
 async function menu () {
@@ -384,19 +447,21 @@ async function menu () {
             detalle: progreso.campania >= ENTRENADORES.length ? 'CAMPEÓN' : `MEDALLAS ${medallas}/${TOTAL_MEDALLAS}`,
             valor: 'campania'
         },
-        { texto: 'COMBATE LIBRE', detalle: 'ELEGÍS RIVAL', valor: 'libre' }
+        { texto: 'COMBATE LIBRE', detalle: 'ELEGÍS RIVAL', valor: 'libre' },
+        { texto: 'DOS JUGADORES', detalle: 'MISMA PANTALLA', valor: 'dos' }
     ]
     if (estado.equipo.length || equipoGuardado().length) opciones.push({ texto: 'NUEVO EQUIPO', detalle: 'ARMAR OTRO', valor: 'equipo' })
     const eleccion = await decir(TEXTOS.menu(estado.nombre), opciones)
     habilitarPokedex(false)
     if (eleccion === 'campania') await jugarCampania()
     else if (eleccion === 'libre') await combateLibre()
+    else if (eleccion === 'dos') await dosJugadores()
     else await armarEquipo()
 }
 
 async function introduccion () {
     await decir(TEXTOS.bienvenida)
-    estado.nombre = await pedirNombre()
+    estado.nombre = await pedirNombre({ alEscribir: (texto) => { ui.trainerName.textContent = texto || '-' } })
     progreso.nombre = estado.nombre
     guardarProgreso(progreso)
     actualizarEntrenador()
