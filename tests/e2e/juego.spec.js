@@ -30,9 +30,9 @@ test('la Pokédex lateral muestra datos y se bloquea al elegir inicial', async (
     await expect(page.locator('#trainerPokemon')).toContainText('CHARMANDER')
     await expect(page.locator('#cardJugador .equipoIndicador li')).toHaveCount(3)
     await expect(page.locator('#cardRival .equipoIndicador li.pokebola')).toHaveCount(3)
-    await expect(page.locator('#cardJugador [data-campo="salud"]')).toHaveText('29/29')
+    await expect(page.locator('#cardJugador [data-campo="salud"]')).toHaveText('25/25')
     await expect(page.locator('#cardJugador [data-campo="tipo"]')).toHaveText('FUEGO')
-    await expect(page.locator('#cardJugador [data-campo="nivel"]')).toHaveText('10')
+    await expect(page.locator('#cardJugador [data-campo="nivel"]')).toHaveText('8')
     await expect(page.locator('#answers button.movimiento')).toHaveText(['ARAÑAZONORMAL 35/35', 'ASCUASFUEGO 25/25'])
     expect(errores).toEqual([])
 })
@@ -59,16 +59,15 @@ for (const [inicial, rival, ataque] of combinaciones) {
         await pelear(page, ataque)
 
         const titulo = await page.locator('#modalTitle').textContent()
-        const debilitados = (card) => page.locator(`${card} .equipoIndicador li.debilitado`)
         if (titulo === '¡GANASTE!') {
-            await expect(debilitados('#cardRival')).toHaveCount(3)
-            expect(await debilitados('#cardJugador').count()).toBeLessThan(3)
+            await expect(page.locator('#cardRival .equipoIndicador li.debilitado')).toHaveCount(3)
             await expect(page.locator('#trainerRecord')).toHaveText('1V - 0D')
         } else {
             expect(titulo).toBe('¡PERDISTE!')
-            await expect(debilitados('#cardJugador')).toHaveCount(3)
             await expect(page.locator('#trainerRecord')).toHaveText('0V - 1D')
         }
+        // Después del combate el equipo queda curado.
+        await expect(page.locator('#cardJugador .equipoIndicador li.debilitado')).toHaveCount(0)
 
         await page.locator('#modalButtons button').filter({ hasText: 'NO' }).click()
         await esperarTexto(page, 'Vuelve cuando')
@@ -76,6 +75,9 @@ for (const [inicial, rival, ataque] of combinaciones) {
         await esperarTexto(page, 'Hola de nuevo, ASH')
         await expect(page.locator('#listaLateral button').first()).toBeEnabled()
         await expect(page.locator('#cardRival [data-campo="nombre"]')).toHaveText('-')
+        await continuar(page)
+        await esperarTexto(page, 'ya tienes un equipo')
+        await expect(botones(page)).toHaveText(['SEGUIRMI EQUIPO', 'NUEVOARMAR OTRO'])
         expect(errores).toEqual([])
     })
 }
@@ -193,4 +195,60 @@ test('se puede cambiar de Pokémon durante el combate', async ({ page }) => {
     await expect(page.locator('#cardJugador [data-campo="nombre"]')).toHaveText(segundo)
     await expect(page.locator('#cardJugador .equipoIndicador li').nth(1)).toHaveClass(/activo/)
     expect(errores).toEqual([])
+})
+
+const nivel = (page, card) => page.locator(`${card} [data-campo="nivel"]`)
+
+test('el equipo se guarda con su nivel y evoluciona al terminar el combate', async ({ page }) => {
+    // Charmander ya alcanzó el nivel 16 (2535 de experiencia) pero no evolucionó.
+    const equipo = [{ id: 4, exp: 2600, movimientos: [] }, { id: 7, exp: 2600, movimientos: [] }, { id: 1, exp: 2600, movimientos: [] }]
+    const errores = await prepararPagina(page, { progreso: { nombre: 'ASH', victorias: 0, derrotas: 0, equipo } })
+    await avanzar(page, 'Bienvenido')
+    await esperarTexto(page, 'llamas')
+    await expect(page.locator('#nameInput')).toHaveValue('ASH')
+    await continuar(page)
+    await avanzar(page, 'conocerte', 'camino', 'ligera')
+    await esperarTexto(page, 'ya tienes un equipo: CHARMANDER (Nv.\u00a016), SQUIRTLE (Nv.\u00a016), BULBASAUR (Nv.\u00a016)')
+    await botones(page).filter({ hasText: 'SEGUIR' }).click()
+    await expect(nivel(page, '#cardJugador')).toHaveText('16')
+    await avanzar(page, 'listo', 'acción', 'entrenamiento')
+    await elegirPokemon(page, 'chikorita')
+    await expect(nivel(page, '#cardRival')).toHaveText('16')
+    await avanzar(page, 'también tendrá un equipo', 'Recuerda')
+
+    await pelear(page)
+    // pelear() acepta la evolución (primer botón) antes de la ventana final.
+    await expect(page.locator('#modalTitle')).toHaveText(/GANASTE|PERDISTE/)
+    await expect(page.locator('#trainerPokemon')).toContainText('CHARMELEON')
+    const guardado = await page.evaluate(() => JSON.parse(localStorage.getItem('pokemonTypeGame')).equipo)
+    expect(guardado.map((p) => p.id)).toContain(5)
+    expect(guardado.every((p) => p.movimientos.length > 0)).toBe(true)
+    expect(errores).toEqual([])
+})
+
+test('gana experiencia al derrotar a un rival y sube de nivel', async ({ page }) => {
+    // Equipo de nivel 30 (los rivales tienen el mismo nivel).
+    const equipo = [{ id: 6, exp: 30000, movimientos: [] }, { id: 9, exp: 30000, movimientos: [] }, { id: 3, exp: 30000, movimientos: [] }]
+    await prepararPagina(page, { progreso: { nombre: 'ASH', victorias: 0, derrotas: 0, equipo } })
+    await avanzar(page, 'Bienvenido')
+    await continuar(page)
+    await avanzar(page, 'conocerte', 'camino', 'ligera')
+    await botones(page).filter({ hasText: 'SEGUIR' }).click()
+    await avanzar(page, 'listo', 'acción', 'entrenamiento')
+    await elegirPokemon(page, 'AL AZAR')
+    await avanzar(page, 'también tendrá un equipo', 'Recuerda')
+    const vistos = new Set()
+    const modal = page.locator('#modal[open]')
+    for (let i = 0; i < 200 && !(await modal.isVisible()); i++) {
+        await expect(botones(page).first().or(modal)).toBeVisible()
+        const texto = await page.locator('#chatOak').textContent()
+        if (/rival se debilitó/.test(texto)) vistos.add('debilitado')
+        if (/ganó \d+ puntos de experiencia/.test(texto)) vistos.add('exp')
+        if (await modal.isVisible()) break
+        const movimiento = page.locator('#answers button.movimiento:enabled')
+        await ((await movimiento.count()) ? movimiento.first() : botones(page).first()).click()
+    }
+    // Cada vez que cae un rival, el equipo gana experiencia.
+    expect(vistos.has('debilitado')).toBe(vistos.has('exp'))
+    await expect(page.locator('#modalTitle')).toHaveText(/GANASTE|PERDISTE/)
 })

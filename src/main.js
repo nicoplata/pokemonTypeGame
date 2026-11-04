@@ -1,10 +1,11 @@
 // Flujo del juego: une la lógica de combate con la interfaz.
 
 import { TEXTOS } from './datos/textos.js'
-import { IMAGENES_LOCALES, INICIALES, NIVEL_COMBATE, RIVALES, spritePokemon } from './datos/juego.js'
+import { IMAGENES_LOCALES, INICIALES, NIVEL_INICIAL, RIVALES, spritePokemon } from './datos/juego.js'
 import { pokemonAlAzar } from './motor/busqueda.js'
 import { crearCombate } from './motor/equipos.js'
-import { crearLuchador } from './motor/luchador.js'
+import { curar } from './motor/experiencia.js'
+import { crearLuchador, resumirLuchador } from './motor/luchador.js'
 import { crearPokedex } from './motor/pokedex.js'
 import { cargarDatos } from './servicios/datos.js'
 import { guardarProgreso, leerProgreso } from './servicios/progreso.js'
@@ -20,6 +21,7 @@ import { elegirEnPokedex, prepararSelector } from './ui/selector.js'
 import { jugarCombate } from './juego/bucleCombate.js'
 import { crearControladorHumano, crearControladorIA } from './juego/controladores.js'
 import { crearPresentador } from './juego/presentador.js'
+import { crearRepartoDeExperiencia, procesarEvoluciones } from './juego/progresion.js'
 
 const ui = {
     trainerName: $('#trainerName'),
@@ -64,7 +66,7 @@ function habilitarPokedex (habilitada) {
 function prepararPokedexLateral () {
     listaLateral = crearListaPokemon($('#listaLateral'), $('#vacioLateral'), estado.pokedex.especies(), (id) => {
         if (estado.equipo.length) return
-        mostrarFicha(ui.cards.jugador, crearLuchador(estado.pokedex, id, NIVEL_COMBATE))
+        mostrarFicha(ui.cards.jugador, crearLuchador(estado.pokedex, id, NIVEL_INICIAL))
     })
     ui.busquedaLateral.addEventListener('input', () => listaLateral.filtrar(ui.busquedaLateral.value))
 }
@@ -159,7 +161,29 @@ function reiniciarPantalla () {
     actualizarEntrenador()
 }
 
-const crear = (id) => crearLuchador(estado.pokedex, id, NIVEL_COMBATE)
+const crear = (id, nivel = NIVEL_INICIAL) => crearLuchador(estado.pokedex, id, nivel)
+
+// Recrea el equipo guardado (descarta Pokémon que ya no existan en los datos).
+function equipoGuardado () {
+    const equipo = []
+    for (const guardado of progreso.equipo) {
+        try {
+            equipo.push(crearLuchador(estado.pokedex, guardado.id, NIVEL_INICIAL, guardado))
+        } catch (error) {
+            console.error(error)
+        }
+    }
+    return equipo.length === TAMANIO_EQUIPO ? equipo : []
+}
+
+function guardarEquipo () {
+    progreso.equipo = estado.equipo.map(resumirLuchador)
+    guardarProgreso(progreso)
+}
+
+const resumenEquipo = (equipo) => equipo.map((l) => `${l.nombre} (Nv.\u00a0${l.nivel})`).join(', ')
+
+const nivelPromedio = (equipo) => Math.round(equipo.reduce((suma, l) => suma + l.nivel, 0) / equipo.length)
 
 // Sugiere Pokémon al azar distintos de los excluidos.
 function sugerencias (cantidad, excluir) {
@@ -172,6 +196,23 @@ function mostrarEquipoEnArmado () {
     mostrarFicha(ui.cards.jugador, estado.equipo.at(-1))
     mostrarEquipo(ui.cards.jugador, estado.equipo, estado.equipo.length - 1)
     actualizarEntrenador()
+}
+
+// Si hay un equipo guardado, pregunta si seguir con él. Devuelve true si sigue.
+async function ofrecerEquipoGuardado () {
+    const equipo = equipoGuardado()
+    if (!equipo.length) return false
+    const seguir = await decir(TEXTOS.seguirEquipo(resumenEquipo(equipo)), [
+        { texto: 'SEGUIR', detalle: 'MI EQUIPO', valor: true },
+        { texto: 'NUEVO', detalle: 'ARMAR OTRO', valor: false }
+    ])
+    if (!seguir) return false
+    habilitarPokedex(false)
+    estado.equipo = equipo
+    mostrarFicha(ui.cards.jugador, equipo[0])
+    mostrarEquipo(ui.cards.jugador, equipo, 0)
+    actualizarEntrenador()
+    return true
 }
 
 async function armarEquipo () {
@@ -206,7 +247,8 @@ async function armarEquipoRival () {
     const idRival = await elegirPokemon({
         pregunta: TEXTOS.elegirRival, sugeridos: RIVALES, titulo: TEXTOS.tituloRival, permitirAzar: true, excluir: ids
     })
-    const equipo = [idRival, ...sugerencias(TAMANIO_EQUIPO - 1, [...ids, idRival])].map(crear)
+    const nivel = Math.max(NIVEL_INICIAL, nivelPromedio(estado.equipo))
+    const equipo = [idRival, ...sugerencias(TAMANIO_EQUIPO - 1, [...ids, idRival])].map((id) => crear(id, nivel))
     decirEntrenador(`¡Quiero combatir contra ${equipo[0].nombre}!`)
     return equipo
 }
@@ -227,7 +269,10 @@ async function partida (esRevancha) {
         await decir(TEXTOS.decision)
     }
 
-    await armarEquipo()
+    if (!(await ofrecerEquipoGuardado())) {
+        await armarEquipo()
+        guardarEquipo()
+    }
     await decir(TEXTOS.listo)
     await decir(TEXTOS.accion)
     await decir(TEXTOS.entrenamiento)
@@ -244,13 +289,25 @@ async function partida (esRevancha) {
         pokedex: estado.pokedex,
         combate,
         presentador,
-        controladores: { jugador: crearControladorHumano(estado.pokedex), rival: crearControladorIA(estado.pokedex) }
+        controladores: { jugador: crearControladorHumano(estado.pokedex), rival: crearControladorIA(estado.pokedex) },
+        alDebilitarse: crearRepartoDeExperiencia(estado.pokedex, ui.cards.jugador)
     })
     const gano = ganador === 'jugador'
     if (gano) progreso.victorias++
     else progreso.derrotas++
-    guardarProgreso(progreso)
+    // El equipo de combate es una copia: se traen los cambios (nivel, movimientos).
+    estado.equipo = combate.jugador.equipo
+    guardarEquipo()
     actualizarEntrenador()
+    await decir(gano ? TEXTOS.ganaste(estado.nombre) : TEXTOS.perdiste(estado.nombre))
+
+    await procesarEvoluciones(estado.pokedex, estado.equipo, ui.cards.jugador)
+    estado.equipo.forEach(curar)
+    guardarEquipo()
+    mostrarFicha(ui.cards.jugador, estado.equipo[0])
+    mostrarEquipo(ui.cards.jugador, estado.equipo, 0)
+    actualizarEntrenador()
+    await decir(TEXTOS.centro)
 
     const jugarDeNuevo = await modal({
         icono: gano ? '★' : '✖',

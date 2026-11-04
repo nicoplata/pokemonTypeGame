@@ -7,7 +7,8 @@ import { readFile } from 'node:fs/promises'
 // Prepara la página: bloquea recursos externos y sirve las imágenes de
 // PokéAPI desde una imagen local. `fallosDatos` indica cuántas veces debe
 // fallar la carga de la Pokédex antes de responder.
-export async function prepararPagina (page, { fallosDatos = 0 } = {}) {
+// `progreso` (opcional) se guarda en localStorage antes de abrir la página.
+export async function prepararPagina (page, { fallosDatos = 0, progreso = null } = {}) {
     const errores = []
     page.on('pageerror', (e) => errores.push(e.message))
     page.on('console', (m) => {
@@ -29,6 +30,14 @@ export async function prepararPagina (page, { fallosDatos = 0 } = {}) {
         }
         return r.continue()
     })
+    if (progreso) {
+        await page.addInitScript((datos) => {
+            if (!sessionStorage.getItem('progresoCargado')) {
+                localStorage.setItem('pokemonTypeGame', datos)
+                sessionStorage.setItem('progresoCargado', '1')
+            }
+        }, JSON.stringify(progreso))
+    }
     await page.goto('/')
     return errores
 }

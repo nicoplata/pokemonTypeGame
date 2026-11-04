@@ -21,18 +21,21 @@ describe('progreso', () => {
     }
     it('guarda y lee el progreso', () => {
         const a = almacen()
-        guardarProgreso({ nombre: 'ASH', victorias: 2, derrotas: 1 }, a)
-        expect(leerProgreso(a)).toEqual({ nombre: 'ASH', victorias: 2, derrotas: 1 })
+        const equipo = [{ id: 4, exp: 1000, movimientos: [10, 52] }]
+        guardarProgreso({ nombre: 'ASH', victorias: 2, derrotas: 1, equipo }, a)
+        expect(leerProgreso(a)).toEqual({ nombre: 'ASH', victorias: 2, derrotas: 1, equipo })
     })
     it('devuelve un progreso vacío si no hay datos o están corruptos', () => {
-        expect(leerProgreso(almacen())).toEqual({ nombre: '', victorias: 0, derrotas: 0 })
+        expect(leerProgreso(almacen())).toEqual({ nombre: '', victorias: 0, derrotas: 0, equipo: [] })
         const a = almacen()
         a.setItem('pokemonTypeGame', '{roto')
-        expect(leerProgreso(a)).toEqual({ nombre: '', victorias: 0, derrotas: 0 })
+        expect(leerProgreso(a)).toEqual({ nombre: '', victorias: 0, derrotas: 0, equipo: [] })
     })
     it('descarta campos inválidos', () => {
-        expect(normalizarProgreso({ nombre: 3, victorias: 'x', derrotas: 1.5 }))
-            .toEqual({ nombre: '', victorias: 0, derrotas: 0 })
+        expect(normalizarProgreso({ nombre: 3, victorias: 'x', derrotas: 1.5, equipo: 'x' }))
+            .toEqual({ nombre: '', victorias: 0, derrotas: 0, equipo: [] })
+        expect(normalizarProgreso({ equipo: [{ id: 4, exp: -1 }, { id: 'a', exp: 3 }, { id: 7, exp: 5, movimientos: [1, 'x'] }, null] }).equipo)
+            .toEqual([{ id: 7, exp: 5, movimientos: [1] }])
     })
     it('no falla si localStorage no está disponible', () => {
         const roto = { getItem () { throw new Error('bloqueado') }, setItem () { throw new Error('bloqueado') } }

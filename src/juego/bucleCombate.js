@@ -3,8 +3,10 @@
 
 import { LADOS, cambiar, ganador, necesitaReemplazo, resolverTurnoEquipos } from '../motor/equipos.js'
 
-// Devuelve el lado ganador ('jugador' o 'rival').
-export async function jugarCombate ({ pokedex, combate, controladores, presentador, azar = Math.random }) {
+// Devuelve el lado ganador ('jugador' o 'rival'). `alDebilitarse(combate,
+// lado)` se llama cuando cae el Pokémon en el campo de ese lado, antes de
+// reemplazarlo (por ejemplo, para repartir experiencia).
+export async function jugarCombate ({ pokedex, combate, controladores, presentador, alDebilitarse, azar = Math.random }) {
     for (const lado of LADOS) presentador.mostrarLado(combate, lado)
 
     while (!ganador(combate)) {
@@ -13,6 +15,9 @@ export async function jugarCombate ({ pokedex, combate, controladores, presentad
 
         const eventos = resolverTurnoEquipos(pokedex, combate, acciones, azar)
         await presentador.mostrarEventos(combate, eventos)
+        if (alDebilitarse) {
+            for (const evento of eventos.filter((e) => e.tipo === 'debilitado')) await alDebilitarse(combate, evento.lado)
+        }
         if (ganador(combate)) break
 
         // Primero reemplaza el rival, así quien juega sabe contra quién elige.

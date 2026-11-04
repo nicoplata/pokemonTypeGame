@@ -4,8 +4,8 @@
 export const INICIALES = [1, 4, 7]
 export const RIVALES = [152, 155, 158]
 
-// Nivel de los Pokémon en combate (define qué movimientos conocen).
-export const NIVEL_COMBATE = 10
+// Nivel con el que empieza un equipo nuevo.
+export const NIVEL_INICIAL = 8
 
 // Imágenes locales (se usan en los botones de selección y como respaldo).
 export const IMAGENES_LOCALES = {

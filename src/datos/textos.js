@@ -28,5 +28,18 @@ export const TEXTOS = {
     equipoRival: (nombre) => `Tu rival también tendrá un equipo de tres. ¡Empieza con ${nombre}!`,
     elegirCambio: '¿A quién quieres enviar?',
     elegirReemplazo: '¿Qué Pokémon enviarás ahora?',
+    seguirEquipo: (resumen) => `Veo que ya tienes un equipo: ${resumen}. ¿Seguimos con él o prefieres armar uno nuevo?`,
+    expGanada: (nombre, cantidad) => `${nombre} ganó ${cantidad} puntos de experiencia.`,
+    subeNivel: (nombre, nivel) => `¡${nombre} subió al nivel ${nivel}!`,
+    aprendio: (nombre, movimiento) => `¡${nombre} aprendió ${movimiento}!`,
+    quiereAprender: (nombre, movimiento) => `${nombre} quiere aprender ${movimiento}, pero ya conoce cuatro movimientos. ¿Cuál olvidará?`,
+    olvido: (nombre, viejo, nuevo) => `1, 2 y... ¡Puf! ${nombre} olvidó ${viejo} y aprendió ${nuevo}.`,
+    noAprendio: (nombre, movimiento) => `${nombre} no aprendió ${movimiento}.`,
+    evolucionando: (nombre) => `¿Qué? ¡${nombre} está evolucionando!`,
+    evoluciono: (nombre, nuevo) => `¡Felicidades! ¡${nombre} evolucionó en ${nuevo}!`,
+    evolucionDetenida: (nombre) => `${nombre} dejó de evolucionar.`,
+    centro: 'Dejé a tu equipo como nuevo: salud y PP al máximo.',
+    ganaste: (nombre) => `¡Ganaste el combate, ${nombre}!`,
+    perdiste: (nombre) => `Esta vez perdiste, ${nombre}. ¡La próxima será!`,
     tituloRival: 'ELIGE A TU RIVAL'
 }

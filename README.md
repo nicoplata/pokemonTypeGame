@@ -31,7 +31,17 @@ según el movimiento), con un 50 % extra si el movimiento es del mismo tipo
 que el Pokémon (STAB), golpes críticos (x1,5) y una variación aleatoria del
 85 % al 100 %. Las estadísticas también se calculan según el nivel.
 
-Tus victorias y derrotas se guardan en el navegador (`localStorage`).
+### Experiencia y evolución
+
+Cada vez que cae un Pokémon rival, el que lo derrotó gana experiencia y el
+resto del equipo con vida recibe la mitad. Al subir de nivel mejoran las
+estadísticas y pueden aprender movimientos nuevos (si ya conocen cuatro,
+elegís cuál olvidar). Al terminar el combate, los que llegaron al nivel
+necesario evolucionan (podés detenerlo). Los rivales tienen el nivel promedio
+de tu equipo.
+
+Tu equipo, tus victorias y tus derrotas se guardan en el navegador
+(`localStorage`); en la próxima partida podés seguir con el mismo equipo.
 
 ## Desarrollo
 

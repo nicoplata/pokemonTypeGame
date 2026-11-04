@@ -2,6 +2,7 @@
 
 import { TIPOS_ES } from '../datos/tipos.js'
 import { IMAGENES_LOCALES, imagenPokemon, spritePokemon } from '../datos/juego.js'
+import { progresoDeNivel } from '../motor/experiencia.js'
 import { reducirMovimiento } from './dom.js'
 
 const campo = (card, nombre) => card.querySelector(`[data-campo="${nombre}"]`)
@@ -22,6 +23,14 @@ export function mostrarFicha (card, luchador) {
     campo(card, 'defensa').textContent = `${luchador.stats.def} / ${luchador.stats.spd}`
     campo(card, 'velocidad').textContent = luchador.stats.spe
     actualizarSalud(card, luchador.salud, luchador.saludMax)
+    actualizarExperiencia(card, luchador)
+}
+
+export function actualizarExperiencia (card, luchador) {
+    const barra = campo(card, 'exp')
+    if (!barra) return
+    const progreso = luchador.crecimiento ? progresoDeNivel(luchador.crecimiento, luchador.nivel, luchador.exp) : 0
+    barra.style.width = `${progreso * 100}%`
 }
 
 export function actualizarSalud (card, salud, saludMax) {
@@ -69,6 +78,8 @@ export function limpiarFicha (card) {
     barra.style.width = '0%'
     barra.classList.remove('medio', 'bajo')
     campo(card, 'equipo').replaceChildren()
+    const exp = campo(card, 'exp')
+    if (exp) exp.style.width = '0%'
 }
 
 export function animarGolpe (card) {

@@ -1,22 +1,36 @@
 // Crea un Pokémon listo para combatir.
 
 import { calcularEstadisticas } from './estadisticas.js'
-import { movimientosAlNivel } from './pokedex.js'
+import { expParaNivel, nivelPorExp } from './experiencia.js'
+import { movimientoSoportado, movimientosAlNivel } from './pokedex.js'
 
-export function crearLuchador (pokedex, idEspecie, nivel) {
+// `guardado` (opcional) = { exp, movimientos: [ids] } para recrear un
+// Pokémon del equipo guardado.
+export function crearLuchador (pokedex, idEspecie, nivel, guardado = {}) {
     const especie = pokedex.especie(idEspecie)
-    const stats = calcularEstadisticas(especie.base, nivel)
+    const exp = Number.isFinite(guardado.exp) ? guardado.exp : expParaNivel(especie.crecimiento, nivel)
+    const nivelReal = Number.isFinite(guardado.exp) ? nivelPorExp(especie.crecimiento, exp) : nivel
+    const stats = calcularEstadisticas(especie.base, nivelReal)
+    const idsGuardados = (guardado.movimientos ?? []).filter((id) => {
+        try { return movimientoSoportado(pokedex.movimiento(id)) } catch { return false }
+    })
+    const ids = idsGuardados.length ? idsGuardados.slice(0, 4) : movimientosAlNivel(pokedex, especie, nivelReal)
     return {
         id: especie.id,
         nombre: especie.nombre.toUpperCase(),
         tipos: especie.tipos,
-        nivel,
+        nivel: nivelReal,
+        exp,
+        crecimiento: especie.crecimiento,
         stats,
         saludMax: stats.hp,
         salud: stats.hp,
-        movimientos: movimientosAlNivel(pokedex, especie, nivel).map((id) => {
+        movimientos: ids.map((id) => {
             const mov = pokedex.movimiento(id)
             return { id, pp: mov.pp, ppMax: mov.pp }
         })
     }
 }
+
+// Lo mínimo para guardar un Pokémon del equipo y recrearlo después.
+export const resumirLuchador = (luchador) => ({ id: luchador.id, exp: luchador.exp, movimientos: luchador.movimientos.map((m) => m.id) })
