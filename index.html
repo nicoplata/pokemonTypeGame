@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Juego de combate por turnos con Pokémon y tabla de tipos, usando datos de PokéAPI.">
+    <meta name="theme-color" content="#cc0000">
     <title>Pokémon Type Game</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./img/icono-192.png" type="image/png">
+    <link rel="apple-touch-icon" href="./img/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -15,7 +19,10 @@
         <header>
             <img src="./img/pokemonLogo.png" alt="Logo de Pokémon">
             <h1>POKéDEX</h1>
-            <button type="button" id="botonSonido" class="botonSonido" aria-pressed="false">♪ SONIDO</button>
+            <div class="botonesCabecera">
+                <button type="button" id="botonInstalar" class="botonCabecera" hidden>⬇ INSTALAR</button>
+                <button type="button" id="botonSonido" class="botonCabecera" aria-pressed="false">♪ SONIDO</button>
+            </div>
         </header>
 
         <nav aria-label="Pokédex">

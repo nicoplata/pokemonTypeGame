@@ -11,6 +11,7 @@ import { crearLuchador, resumirLuchador } from './motor/luchador.js'
 import { crearPokedex } from './motor/pokedex.js'
 import { cargarDatos } from './servicios/datos.js'
 import { guardarProgreso, leerProgreso } from './servicios/progreso.js'
+import { prepararBotonInstalar, registrarServiceWorker } from './servicios/pwa.js'
 import { $ } from './ui/dom.js'
 import {
     SIGUIENTE, decir, decirEntrenador, escribir, limpiarOpciones, mostrarEnEntrenador, mostrarOpciones,
@@ -415,6 +416,8 @@ function prepararBotonSonido () {
 }
 
 async function iniciar () {
+    registrarServiceWorker()
+    prepararBotonInstalar($('#botonInstalar'))
     prepararBotonSonido()
     iniciarMusica('menu')
     actualizarEntrenador()

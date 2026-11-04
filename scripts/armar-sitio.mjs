@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 
 const RAIZ = fileURLToPath(new URL('..', import.meta.url))
 const DESTINO = new URL('../dist/', import.meta.url)
-const ARCHIVOS = ['index.html', 'src', 'styles', 'img', 'data']
+const ARCHIVOS = ['index.html', 'manifest.webmanifest', 'sw.js', 'src', 'styles', 'img', 'data']
 
 await rm(DESTINO, { recursive: true, force: true })
 for (const archivo of ARCHIVOS) {

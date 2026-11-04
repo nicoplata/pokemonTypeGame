@@ -110,6 +110,17 @@ castellano):
 npm run datos
 ```
 
+### Instalar y jugar sin conexión
+
+El juego es una PWA: desde el navegador (botón **⬇ INSTALAR** o el menú del
+navegador) se puede instalar como app en el celular o la computadora, y
+después de la primera visita funciona sin conexión. `sw.js` guarda los
+archivos del juego; si agregás archivos nuevos, actualizá la lista con:
+
+```bash
+npm run precache
+```
+
 ### Estilos
 
 Los estilos se escriben en `sass/` y se compilan a `styles/styles.css`:
@@ -147,5 +158,6 @@ sass/                Estilos fuente
 styles/styles.css    Estilos compilados
 tests/unit/          Tests unitarios
 tests/e2e/           Tests en navegador
-scripts/             Servidor local, generador de datos y armado del sitio
+scripts/             Servidor local, generador de datos, precache y armado del sitio
+sw.js                Service worker (juego sin conexión)
 ```

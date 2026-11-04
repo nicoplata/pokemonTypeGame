@@ -165,8 +165,18 @@ header h1 {
   }
 }
 
-.botonSonido {
+.botonesCabecera {
   margin-left: auto;
+  display: flex;
+  gap: 10px;
+}
+@media (max-width: 760px) {
+  .botonesCabecera {
+    margin-left: 0;
+  }
+}
+
+.botonCabecera {
   padding: 10px 14px;
   background-color: #ffffff;
   border: 2px solid lightgray;
@@ -174,17 +184,15 @@ header h1 {
   font-size: 10px;
   cursor: pointer;
 }
-.botonSonido:hover {
+.botonCabecera:hover {
   border-color: #111111;
 }
-.botonSonido[aria-pressed=true] {
+.botonCabecera[hidden] {
+  display: none;
+}
+.botonCabecera[aria-pressed=true] {
   color: #777777;
   text-decoration: line-through;
-}
-@media (max-width: 760px) {
-  .botonSonido {
-    margin-left: 0;
-  }
 }
 
 nav {

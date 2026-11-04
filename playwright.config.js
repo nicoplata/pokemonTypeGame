@@ -11,6 +11,8 @@ export default defineConfig({
     use: {
         baseURL: `http://localhost:${PUERTO}`,
         reducedMotion: 'reduce',
+        // El service worker se prueba aparte (tests/e2e/pwa.spec.js).
+        serviceWorkers: 'block',
         trace: 'retain-on-failure'
     },
     projects: [
