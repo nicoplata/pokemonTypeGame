@@ -48,9 +48,12 @@ jobs:
           path: test-results/
           retention-days: 7
 
+  # Opcional: se activa creando la variable PUBLICAR_EN_PAGES=true en
+  # Settings → Secrets and variables → Actions → Variables (y eligiendo
+  # GitHub Actions como fuente en Settings → Pages).
   publicar:
     name: Publicar en GitHub Pages
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.PUBLICAR_EN_PAGES == 'true'
     needs: tests
     runs-on: ubuntu-latest
     permissions:

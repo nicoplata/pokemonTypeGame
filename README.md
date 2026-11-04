@@ -72,11 +72,16 @@ npm run build:css
 ### Integración continua y publicación
 
 En cada push y pull request, GitHub Actions corre todos los tests
-(`.github/workflows/ci.yml`). Cuando se actualiza `main` y los tests pasan,
-publica el juego en GitHub Pages.
+(`.github/workflows/ci.yml`).
 
-Para activarlo por única vez: en GitHub, **Settings → Pages → Build and
-deployment → Source: GitHub Actions**.
+Publicar en GitHub Pages es opcional. Para activarlo:
+
+1. **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+2. **Settings → Secrets and variables → Actions → Variables**: crear
+   `PUBLICAR_EN_PAGES` con el valor `true`.
+
+Desde ahí, cada vez que se actualiza `main` y los tests pasan, el juego se
+publica solo.
 
 ## Estructura
 
