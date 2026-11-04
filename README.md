@@ -31,6 +31,11 @@ según el movimiento), con un 50 % extra si el movimiento es del mismo tipo
 que el Pokémon (STAB), golpes críticos (x1,5) y una variación aleatoria del
 85 % al 100 %. Las estadísticas también se calculan según el nivel.
 
+Durante el combate, la escena muestra a los dos Pokémon enfrentados con sus
+barras de salud, y anima los ataques, los golpes (con el daño flotando), los
+debilitados y las entradas. Si tu sistema pide menos animaciones, el juego
+las omite.
+
 ### Experiencia y evolución
 
 Cada vez que cae un Pokémon rival, el que lo derrotó gana experiencia y el

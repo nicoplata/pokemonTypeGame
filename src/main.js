@@ -16,6 +16,7 @@ import {
 } from './ui/dialogo.js'
 import { limpiarFicha, mostrarEquipo, mostrarFicha } from './ui/fichas.js'
 import { crearListaPokemon } from './ui/listaPokemon.js'
+import { ocultarEscena } from './ui/escena.js'
 import { modal } from './ui/modal.js'
 import { elegirEnPokedex, prepararSelector } from './ui/selector.js'
 import { jugarCombate } from './juego/bucleCombate.js'
@@ -154,6 +155,7 @@ async function elegirPokemon ({ pregunta, sugeridos, titulo, permitirAzar, exclu
 
 function reiniciarPantalla () {
     estado.equipo = []
+    ocultarEscena()
     limpiarFicha(ui.cards.jugador)
     limpiarFicha(ui.cards.rival)
     mostrarEnEntrenador()

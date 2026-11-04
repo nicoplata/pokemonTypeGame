@@ -6,6 +6,7 @@ import {
     aprenderMovimiento, conoceCuatro, evolucionPendiente, evolucionar, expOtorgada, ganarExperiencia, repartirExperiencia
 } from '../motor/experiencia.js'
 import { decir } from '../ui/dialogo.js'
+import { animarEntrada, animarSubidaDeNivel, ponerEnEscena } from '../ui/escena.js'
 import { actualizarExperiencia, mostrarFicha, nombreTipo } from '../ui/fichas.js'
 
 const nombreMovimiento = (pokedex, id) => pokedex.movimiento(id).nombre.toUpperCase()
@@ -45,7 +46,11 @@ export function crearRepartoDeExperiencia (pokedex, cardJugador) {
                     if (enCampo) actualizarExperiencia(cardJugador, luchador)
                     await decir(TEXTOS.expGanada(luchador.nombre, evento.cantidad))
                 } else if (evento.tipo === 'subeNivel') {
-                    if (enCampo) mostrarFicha(cardJugador, luchador)
+                    if (enCampo) {
+                        mostrarFicha(cardJugador, luchador)
+                        ponerEnEscena('jugador', luchador)
+                        await animarSubidaDeNivel('jugador')
+                    }
                     await decir(TEXTOS.subeNivel(luchador.nombre, evento.nivel))
                 } else if (evento.tipo === 'puedeAprender') {
                     await preguntarAprender(pokedex, luchador, evento.movimiento)
@@ -60,6 +65,7 @@ export async function procesarEvoluciones (pokedex, equipo, card) {
     for (const luchador of equipo) {
         if (!evolucionPendiente(pokedex, luchador)) continue
         mostrarFicha(card, luchador)
+        ponerEnEscena('jugador', { ...luchador, salud: luchador.salud || luchador.saludMax })
         const nombre = luchador.nombre
         const seguir = await decir(TEXTOS.evolucionando(nombre), [
             { texto: '¡ADELANTE!', detalle: 'EVOLUCIONAR', valor: true },
@@ -69,8 +75,11 @@ export async function procesarEvoluciones (pokedex, equipo, card) {
             await decir(TEXTOS.evolucionDetenida(nombre))
             continue
         }
+        await animarSubidaDeNivel('jugador')
         const evento = evolucionar(pokedex, luchador)
         mostrarFicha(card, luchador)
+        ponerEnEscena('jugador', { ...luchador, salud: luchador.salud || luchador.saludMax })
+        await animarEntrada('jugador')
         await decir(TEXTOS.evoluciono(evento.nombre, evento.nuevoNombre))
     }
 }

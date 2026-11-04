@@ -39,6 +39,24 @@
                 </section>
 
                 <section class="card" id="actionPanel" aria-label="Panel de acciones">
+                    <div id="escena" class="escena" hidden aria-hidden="true">
+                        <div class="ladoEscena" data-lado="rival">
+                            <div class="cajaSalud">
+                                <p><span data-e="nombre"></span> <span class="cajaNivel" data-e="nivel"></span></p>
+                                <div class="healthBar"><div class="healthFill" data-e="barra"></div></div>
+                                <p class="cajaNumeros" data-e="salud"></p>
+                            </div>
+                            <div class="plataforma"><img class="spriteEscena" data-e="sprite" alt=""></div>
+                        </div>
+                        <div class="ladoEscena" data-lado="jugador">
+                            <div class="plataforma"><img class="spriteEscena" data-e="sprite" alt=""></div>
+                            <div class="cajaSalud">
+                                <p><span data-e="nombre"></span> <span class="cajaNivel" data-e="nivel"></span></p>
+                                <div class="healthBar"><div class="healthFill" data-e="barra"></div></div>
+                                <p class="cajaNumeros" data-e="salud"></p>
+                            </div>
+                        </div>
+                    </div>
                     <div id="chat">
                         <div class="chatArea" id="oakChat">
                             <img src="./img/profesorOak.png" alt="Profesor Oak">
