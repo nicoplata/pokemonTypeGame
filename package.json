@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node scripts/servidor.mjs",
+    "datos": "node scripts/generar-datos.mjs",
     "build:css": "sass --no-source-map sass/styles.scss styles/styles.css",
     "check:css": "npm run build:css && git diff --exit-code -- styles/styles.css",
     "test": "vitest run",

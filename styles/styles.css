@@ -63,6 +63,78 @@ input:focus-visible {
   }
 }
 
+.tipo-normal {
+  --color-tipo: #a8a77a;
+}
+
+.tipo-fire {
+  --color-tipo: #ee8130;
+}
+
+.tipo-water {
+  --color-tipo: #6390f0;
+}
+
+.tipo-electric {
+  --color-tipo: #f7d02c;
+}
+
+.tipo-grass {
+  --color-tipo: #7ac74c;
+}
+
+.tipo-ice {
+  --color-tipo: #96d9d6;
+}
+
+.tipo-fighting {
+  --color-tipo: #c22e28;
+}
+
+.tipo-poison {
+  --color-tipo: #a33ea1;
+}
+
+.tipo-ground {
+  --color-tipo: #e2bf65;
+}
+
+.tipo-flying {
+  --color-tipo: #a98ff3;
+}
+
+.tipo-psychic {
+  --color-tipo: #f95587;
+}
+
+.tipo-bug {
+  --color-tipo: #a6b91a;
+}
+
+.tipo-rock {
+  --color-tipo: #b6a136;
+}
+
+.tipo-ghost {
+  --color-tipo: #735797;
+}
+
+.tipo-dragon {
+  --color-tipo: #6f35fc;
+}
+
+.tipo-dark {
+  --color-tipo: #705746;
+}
+
+.tipo-steel {
+  --color-tipo: #b7b7ce;
+}
+
+.tipo-fairy {
+  --color-tipo: #d685ad;
+}
+
 header {
   grid-area: head;
   margin-top: 45px;
@@ -318,6 +390,12 @@ main .dataList dd {
 }
 #actionPanel .optionText {
   font-size: 10px;
+  line-height: 14px;
+  text-align: center;
+}
+#actionPanel .movimiento {
+  width: calc(50% - 5px);
+  border-left: 10px solid var(--color-tipo, lightgray);
 }
 #actionPanel .optionDetail {
   font-size: 8px;
@@ -345,6 +423,9 @@ main .dataList dd {
   #actionPanel .option {
     width: calc(33% - 7px);
     min-width: 90px;
+  }
+  #actionPanel .movimiento {
+    width: calc(50% - 5px);
   }
 }
 

@@ -45,7 +45,7 @@ export async function escribir (texto) {
 function crearBoton (opcion) {
     const boton = document.createElement('button')
     boton.type = 'button'
-    boton.className = 'option'
+    boton.className = opcion.clase ? `option ${opcion.clase}` : 'option'
     boton.disabled = Boolean(opcion.deshabilitado)
     if (opcion.titulo) boton.title = opcion.titulo
     if (opcion.etiqueta) boton.setAttribute('aria-label', opcion.etiqueta)

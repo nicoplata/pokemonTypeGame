@@ -14,10 +14,10 @@ export const TEXTOS = {
     accion: '¿Qué te parece poner a tu Pokémon en acción?',
     entrenamiento: 'Un poco de entrenamiento le sentará de maravilla. Elige a tu rival.',
     elegirRival: '¿Contra qué Pokémon deseas combatir? ¿CHIKORITA, CYNDAQUIL o TOTODILE?',
-    consejoTipos: 'Recuerda: el ATAQUE ESPECIAL usa el tipo de tu Pokémon. ¡Contra el tipo correcto hace el doble de daño!',
-    primerAtaque: '¿Cuál será tu primer ataque?',
-    siguienteAtaque: '¿Cuál será tu siguiente ataque?',
+    consejoTipos: 'Recuerda: cada movimiento tiene un tipo. ¡Contra el tipo correcto hace el doble de daño!',
+    primerAtaque: '¿Qué movimiento usarás primero?',
+    siguienteAtaque: '¿Qué movimiento usarás ahora?',
     cargando: 'Consultando la Pokédex...',
-    errorRed: 'No pude conectarme con la Pokédex. Revisá tu conexión e intentá de nuevo.',
+    errorRed: 'No pude cargar la Pokédex. Revisá tu conexión e intentá de nuevo.',
     despedida: '¡Vuelve cuando quieras!'
 }

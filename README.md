@@ -2,25 +2,22 @@
 
 Juego de combate por turnos en el navegador. El Profesor Oak te recibe, elegís
 tu Pokémon inicial (Bulbasaur, Charmander o Squirtle) y te enfrentás a un rival
-(Chikorita, Cyndaquil o Totodile). Los datos de cada Pokémon se obtienen de
-[PokéAPI](https://pokeapi.co/).
+(Chikorita, Cyndaquil o Totodile). Los datos de los Pokémon y sus movimientos
+vienen de [PokéAPI](https://pokeapi.co/).
 
 ## Cómo jugar
 
 1. Abrí el juego publicado en GitHub Pages, o levantalo en tu compu (ver abajo).
 2. Ingresá tu nombre y elegí tu inicial y tu rival.
-3. En cada turno elegí un ataque:
+3. En cada turno elegí uno de los movimientos de tu Pokémon.
 
-| Ataque   | Daño               | Precisión | Usos | Usa tipos |
-|----------|--------------------|-----------|------|-----------|
-| Rápido   | 25 % del ataque    | 100 %     | ∞    | No        |
-| Pesado   | 40 % del ataque    | 80 %      | ∞    | No        |
-| Especial | 45 % del ataque    | 100 %     | 3    | Sí        |
-
-El **ataque especial** es del tipo de tu Pokémon: hace el doble de daño contra
-un tipo débil (por ejemplo, Fuego contra Planta) y la mitad contra uno
-resistente. Ataca primero el Pokémon con más velocidad. El rival elige sus
-ataques con una pequeña estrategia.
+Cada Pokémon conoce los movimientos reales que aprende hasta su nivel
+(Arañazo, Ascuas, Látigo Cepa...), con su tipo, potencia, precisión y PP.
+Un movimiento hace el doble de daño contra un tipo débil (por ejemplo, Fuego
+contra Planta) y la mitad contra uno resistente. Los movimientos con
+prioridad (como Ataque Rápido) golpean primero; si no, ataca primero el más
+veloz. El rival elige el movimiento que más daño le hace, aunque a veces
+improvisa.
 
 Tus victorias y derrotas se guardan en el navegador (`localStorage`).
 
@@ -54,6 +51,16 @@ juega partidas completas en un navegador (Playwright), en escritorio y móvil.
 La primera vez que corras los e2e instalá el navegador con
 `npx playwright install chromium`.
 
+### Datos
+
+`data/pokedex.json` se genera a partir de los datos oficiales de PokéAPI
+(los 251 Pokémon de las dos primeras generaciones, con sus movimientos en
+castellano):
+
+```bash
+npm run datos
+```
+
 ### Estilos
 
 Los estilos se escriben en `sass/` y se compilan a `styles/styles.css`:
@@ -77,12 +84,13 @@ deployment → Source: GitHub Actions**.
 index.html           Página
 src/main.js          Flujo de la partida
 src/motor/           Lógica de combate (sin DOM, testeada)
-src/datos/           Textos, ataques y tabla de tipos
-src/servicios/       PokéAPI y progreso guardado
+src/datos/           Textos, configuración y tabla de tipos
+src/servicios/       Carga de datos y progreso guardado
+data/pokedex.json    Pokémon y movimientos (generado desde PokéAPI)
 src/ui/              Diálogo, ventana modal y fichas
 sass/                Estilos fuente
 styles/styles.css    Estilos compilados
 tests/unit/          Tests unitarios
 tests/e2e/           Tests en navegador
-scripts/             Servidor local y armado del sitio
+scripts/             Servidor local, generador de datos y armado del sitio
 ```

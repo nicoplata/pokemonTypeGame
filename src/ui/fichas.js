@@ -1,6 +1,7 @@
 // Tarjetas con los datos de cada Pokémon.
 
 import { TIPOS_ES } from '../datos/tipos.js'
+import { IMAGENES_LOCALES, imagenPokemon } from '../datos/juego.js'
 import { reducirMovimiento } from './dom.js'
 
 const campo = (card, nombre) => card.querySelector(`[data-campo="${nombre}"]`)
@@ -11,18 +12,21 @@ export const nombreTipos = (tipos) => tipos.map(nombreTipo).join(' / ')
 export function mostrarFicha (card, luchador) {
     campo(card, 'nombre').textContent = luchador.nombre
     const imagen = campo(card, 'imagen')
-    imagen.src = luchador.imagen
+    imagen.dataset.local = IMAGENES_LOCALES[luchador.id] ?? ''
+    imagen.src = imagenPokemon(luchador.id)
     imagen.alt = luchador.nombre
-    imagen.hidden = !luchador.imagen
-    campo(card, 'ataque').textContent = luchador.ataque
-    campo(card, 'velocidad').textContent = luchador.velocidad
+    imagen.hidden = false
+    campo(card, 'nivel').textContent = luchador.nivel
     campo(card, 'tipo').textContent = nombreTipos(luchador.tipos)
-    actualizarSalud(card, luchador)
+    campo(card, 'ataque').textContent = `${luchador.stats.atk} / ${luchador.stats.spa}`
+    campo(card, 'defensa').textContent = `${luchador.stats.def} / ${luchador.stats.spd}`
+    campo(card, 'velocidad').textContent = luchador.stats.spe
+    actualizarSalud(card, luchador.salud, luchador.saludMax)
 }
 
-export function actualizarSalud (card, luchador) {
-    campo(card, 'salud').textContent = `${luchador.salud}/${luchador.saludMax}`
-    const porcentaje = (luchador.salud / luchador.saludMax) * 100
+export function actualizarSalud (card, salud, saludMax) {
+    campo(card, 'salud').textContent = `${salud}/${saludMax}`
+    const porcentaje = (salud / saludMax) * 100
     const barra = campo(card, 'barra')
     barra.style.width = `${porcentaje}%`
     barra.classList.toggle('medio', porcentaje <= 50 && porcentaje > 20)
@@ -30,7 +34,9 @@ export function actualizarSalud (card, luchador) {
 }
 
 export function limpiarFicha (card) {
-    for (const nombre of ['nombre', 'salud', 'ataque', 'velocidad', 'tipo']) campo(card, nombre).textContent = '-'
+    for (const nombre of ['nombre', 'nivel', 'salud', 'tipo', 'ataque', 'defensa', 'velocidad']) {
+        campo(card, nombre).textContent = '-'
+    }
     const imagen = campo(card, 'imagen')
     imagen.removeAttribute('src')
     imagen.alt = ''
@@ -49,5 +55,12 @@ export function animarGolpe (card) {
 }
 
 for (const card of document.querySelectorAll('.pokemonCard')) {
-    campo(card, 'imagen').addEventListener('animationend', (e) => e.target.classList.remove('golpe'))
+    const imagen = campo(card, 'imagen')
+    imagen.addEventListener('animationend', () => imagen.classList.remove('golpe'))
+    // Si no carga la imagen remota, usa la local (si existe) o la oculta.
+    imagen.addEventListener('error', () => {
+        const local = imagen.dataset.local
+        if (local && !imagen.src.endsWith(local.slice(1))) imagen.src = local
+        else imagen.hidden = true
+    })
 }

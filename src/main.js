@@ -1,11 +1,12 @@
 // Flujo del juego: une la lógica de combate con la interfaz.
 
 import { TEXTOS } from './datos/textos.js'
-import { ATAQUES, IMAGENES, INICIALES, RIVALES } from './datos/juego.js'
-import {
-    calcularAtaque, crearLuchador, eleccionRival, jugadorAtacaPrimero, mensajeAtaque, nombreEnCombate
-} from './motor/combate.js'
-import { crearClientePokeApi } from './servicios/pokeapi.js'
+import { IMAGENES_LOCALES, INICIALES, NIVEL_COMBATE, RIVALES } from './datos/juego.js'
+import { FORCEJEO, elegirMovimientoIA, movimientosDisponibles, resolverTurno } from './motor/combate.js'
+import { crearLuchador } from './motor/luchador.js'
+import { construirPasos } from './motor/mensajes.js'
+import { crearPokedex } from './motor/pokedex.js'
+import { cargarDatos } from './servicios/datos.js'
 import { guardarProgreso, leerProgreso } from './servicios/progreso.js'
 import { $ } from './ui/dom.js'
 import {
@@ -21,14 +22,13 @@ const ui = {
     trainerRecord: $('#trainerRecord'),
     listHint: $('#listHint'),
     pokedexLinks: document.querySelectorAll('.pokemonLink'),
-    cardJugador: $('#cardJugador'),
-    cardRival: $('#cardRival')
+    cards: { jugador: $('#cardJugador'), rival: $('#cardRival') }
 }
 
-const cargarPokemon = crearClientePokeApi()
 const progreso = leerProgreso()
 
 const estado = {
+    pokedex: null,
     nombre: '',
     jugador: null,
     rival: null
@@ -52,24 +52,18 @@ function habilitarPokedex (habilitada) {
 // Consultar la Pokédex solo muestra datos: no cambia tu Pokémon y se
 // desactiva una vez elegido el inicial.
 ui.pokedexLinks.forEach((boton) => {
-    boton.addEventListener('click', async () => {
-        if (estado.jugador) return
-        try {
-            const datos = await cargarPokemon(boton.dataset.pokemon)
-            if (!estado.jugador) mostrarFicha(ui.cardJugador, crearLuchador(datos))
-        } catch (error) {
-            console.error(error)
-            await modal({ icono: '!', titulo: 'SIN CONEXIÓN', texto: TEXTOS.errorRed, botones: [{ texto: 'ACEPTAR', valor: true }] })
-        }
+    boton.addEventListener('click', () => {
+        if (!estado.pokedex || estado.jugador) return
+        mostrarFicha(ui.cards.jugador, crearLuchador(estado.pokedex, Number(boton.dataset.pokemon), NIVEL_COMBATE))
     })
 })
 
-// Carga un Pokémon y, si falla la conexión, ofrece reintentar.
-async function cargarConReintento (id) {
+// Carga los datos y, si falla la conexión, ofrece reintentar.
+async function cargarPokedexConReintento () {
     for (;;) {
         mostrarTextoInmediato(TEXTOS.cargando)
         try {
-            return await cargarPokemon(id)
+            return crearPokedex(await cargarDatos())
         } catch (error) {
             console.error(error)
             await decir(TEXTOS.errorRed, [{ texto: 'REINTENTAR', valor: true }])
@@ -126,48 +120,51 @@ async function pedirNombre () {
 }
 
 const opcionesPokemon = (lista) => lista.map((id) => ({
-    imagen: IMAGENES[id],
-    texto: id.toUpperCase(),
+    imagen: IMAGENES_LOCALES[id],
+    texto: estado.pokedex.especie(id).nombre.toUpperCase(),
     valor: id
 }))
 
-function opcionesAtaque (luchador) {
-    return Object.entries(ATAQUES).map(([clave, ataque]) => {
-        const pp = luchador.pp[clave]
-        const precision = `PREC. ${Math.round(ataque.precision * 100)}%`
-        const detalle = ataque.usaTipo ? `${nombreTipo(luchador.tipos[0])} ${pp}/${ataque.pp}` : precision
+function opcionesMovimientos (luchador) {
+    if (movimientosDisponibles(luchador).length === 0) {
+        return [{ texto: 'FORCEJEO', detalle: 'SIN PP', clase: 'movimiento tipo-normal', valor: FORCEJEO }]
+    }
+    return luchador.movimientos.map((m, indice) => {
+        const mov = estado.pokedex.movimiento(m.id)
+        const potencia = mov.potencia ? `Potencia ${mov.potencia}` : 'Sin potencia'
+        const precision = mov.precision ? `precisión ${mov.precision}%` : 'nunca falla'
         return {
-            texto: ataque.corto,
-            detalle,
-            titulo: `${ataque.nombre} · ${precision}${Number.isFinite(ataque.pp) ? ` · PP ${pp}/${ataque.pp}` : ''}`,
-            deshabilitado: pp <= 0,
-            valor: clave
+            texto: mov.nombre.toUpperCase(),
+            detalle: `${nombreTipo(mov.tipo)} ${m.pp}/${m.ppMax}`,
+            titulo: `${potencia} · ${precision} · ${mov.clase === 'fisico' ? 'físico' : 'especial'}`,
+            clase: `movimiento tipo-${mov.tipo}`,
+            deshabilitado: m.pp <= 0,
+            valor: indice
         }
     })
 }
 
-async function turno (claveJugador) {
-    const { jugador, rival } = estado
-    const claveRival = eleccionRival(rival, jugador)
+function nombreDeEleccion (luchador, eleccion) {
+    if (eleccion === FORCEJEO) return 'FORCEJEO'
+    return estado.pokedex.movimiento(luchador.movimientos[eleccion].id).nombre.toUpperCase()
+}
 
-    const acciones = [
-        { atacante: jugador, defensor: rival, clave: claveJugador, esRival: false, cardDefensor: ui.cardRival },
-        { atacante: rival, defensor: jugador, clave: claveRival, esRival: true, cardDefensor: ui.cardJugador }
-    ]
-    if (!jugadorAtacaPrimero(jugador, rival)) acciones.reverse()
+function aplicarEvento (evento) {
+    const luchador = estado[evento.lado]
+    const card = ui.cards[evento.lado]
+    if (evento.tipo === 'danio' || evento.tipo === 'retroceso') {
+        actualizarSalud(card, evento.salud, luchador.saludMax)
+        if (evento.cantidad > 0) animarGolpe(card)
+    }
+}
 
-    for (const { atacante, defensor, clave, esRival, cardDefensor } of acciones) {
-        atacante.pp[clave]--
-        const resultado = calcularAtaque(atacante, defensor, clave)
-        defensor.salud = Math.max(0, defensor.salud - resultado.danio)
-        actualizarSalud(cardDefensor, defensor)
-        if (resultado.danio > 0) animarGolpe(cardDefensor)
-        await decir(mensajeAtaque(atacante, defensor, clave, resultado, esRival))
-
-        if (defensor.salud === 0) {
-            await decir(`¡${nombreEnCombate(defensor, !esRival)} se debilitó!`)
-            return
-        }
+async function turno (eleccion) {
+    const { pokedex, jugador, rival } = estado
+    const eleccionRival = elegirMovimientoIA(pokedex, rival, jugador)
+    const eventos = resolverTurno(pokedex, jugador, eleccion, rival, eleccionRival)
+    for (const paso of construirPasos(eventos, { jugador, rival })) {
+        paso.eventos.forEach(aplicarEvento)
+        await decir(paso.texto)
     }
 }
 
@@ -175,10 +172,11 @@ async function turno (claveJugador) {
 async function combate () {
     let primerTurno = true
     while (estado.jugador.salud > 0 && estado.rival.salud > 0) {
-        const clave = await decir(primerTurno ? TEXTOS.primerAtaque : TEXTOS.siguienteAtaque, opcionesAtaque(estado.jugador))
+        const pregunta = primerTurno ? TEXTOS.primerAtaque : TEXTOS.siguienteAtaque
+        const eleccion = await decir(pregunta, opcionesMovimientos(estado.jugador))
         primerTurno = false
-        decirEntrenador(`¡${estado.jugador.nombre}, usa ${ATAQUES[clave].nombre}!`)
-        await turno(clave)
+        decirEntrenador(`¡${estado.jugador.nombre}, usa ${nombreDeEleccion(estado.jugador, eleccion)}!`)
+        await turno(eleccion)
     }
     return estado.jugador.salud > 0
 }
@@ -186,11 +184,18 @@ async function combate () {
 function reiniciarPantalla () {
     estado.jugador = null
     estado.rival = null
-    limpiarFicha(ui.cardJugador)
-    limpiarFicha(ui.cardRival)
+    limpiarFicha(ui.cards.jugador)
+    limpiarFicha(ui.cards.rival)
     mostrarEnEntrenador()
     habilitarPokedex(true)
     actualizarEntrenador()
+}
+
+function prepararLuchador (lado, id) {
+    const luchador = { ...crearLuchador(estado.pokedex, id, NIVEL_COMBATE), lado }
+    estado[lado] = luchador
+    mostrarFicha(ui.cards[lado], luchador)
+    return luchador
 }
 
 async function partida (esRevancha) {
@@ -211,22 +216,20 @@ async function partida (esRevancha) {
 
     const idInicial = await decir(TEXTOS.elegirInicial, opcionesPokemon(INICIALES))
     habilitarPokedex(false)
-    decirEntrenador(`¡Elijo a ${idInicial.toUpperCase()}!`)
-    estado.jugador = crearLuchador(await cargarConReintento(idInicial))
-    mostrarFicha(ui.cardJugador, estado.jugador)
+    const jugador = prepararLuchador('jugador', idInicial)
+    decirEntrenador(`¡Elijo a ${jugador.nombre}!`)
     actualizarEntrenador()
 
-    await decir(TEXTOS.buenaEleccion(estado.jugador.nombre))
+    await decir(TEXTOS.buenaEleccion(jugador.nombre))
     await decir(TEXTOS.listo)
     await decir(TEXTOS.accion)
     await decir(TEXTOS.entrenamiento)
 
     const idRival = await decir(TEXTOS.elegirRival, opcionesPokemon(RIVALES))
-    decirEntrenador(`¡Quiero combatir contra ${idRival.toUpperCase()}!`)
-    estado.rival = crearLuchador(await cargarConReintento(idRival))
-    mostrarFicha(ui.cardRival, estado.rival)
-    mostrarEnEntrenador()
+    const rival = prepararLuchador('rival', idRival)
+    decirEntrenador(`¡Quiero combatir contra ${rival.nombre}!`)
     await decir(TEXTOS.consejoTipos)
+    mostrarEnEntrenador()
 
     const gano = await combate()
     if (gano) progreso.victorias++
@@ -245,8 +248,7 @@ async function partida (esRevancha) {
 
 async function iniciar () {
     actualizarEntrenador()
-    // Precarga en segundo plano para que la elección sea instantánea.
-    for (const id of [...INICIALES, ...RIVALES]) cargarPokemon(id).catch(() => {})
+    estado.pokedex = await cargarPokedexConReintento()
 
     let esRevancha = false
     for (;;) {
