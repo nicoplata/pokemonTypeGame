@@ -69,9 +69,9 @@ describe('ganarExperiencia', () => {
 
 describe('aprenderMovimiento', () => {
     it('agrega si tiene lugar', () => {
-        const l = crearLuchador(pokedex, 4, 10) // conoce 2
+        const l = crearLuchador(pokedex, 4, 8) // conoce 3
         expect(aprenderMovimiento(pokedex, l, idMovimiento('dragon-rage'))).toBe(null)
-        expect(l.movimientos).toHaveLength(3)
+        expect(l.movimientos).toHaveLength(4)
     })
     it('reemplaza el elegido si ya conoce cuatro', () => {
         const l = crearLuchador(pokedex, 6, 50)
@@ -102,17 +102,19 @@ describe('evolución', () => {
 
 describe('equipo guardado', () => {
     it('se resume y se recrea igual', () => {
-        const l = crearLuchador(pokedex, 4, 12)
+        const l = crearLuchador(pokedex, 4, 8)
         aprenderMovimiento(pokedex, l, idMovimiento('dragon-rage'))
         l.exp += 50
         const copia = crearLuchador(pokedex, l.id, 1, resumirLuchador(l))
-        expect(copia).toMatchObject({ nivel: 12, exp: l.exp, saludMax: l.saludMax })
+        expect(copia).toMatchObject({ nivel: 8, exp: l.exp, saludMax: l.saludMax })
         expect(copia.movimientos.map((m) => m.id)).toEqual(l.movimientos.map((m) => m.id))
     })
     it('ignora movimientos inválidos guardados', () => {
-        const copia = crearLuchador(pokedex, 4, 1, { exp: 1000, movimientos: [99999, 45] }) // 45 = Gruñido (de estado)
-        expect(copia.movimientos.length).toBeGreaterThan(0)
-        expect(copia.movimientos.map((m) => m.id)).not.toContain(99999)
+        // 45 = Gruñido: sin ningún movimiento de daño, usa los de su nivel.
+        const copia = crearLuchador(pokedex, 4, 1, { exp: 1000, movimientos: [99999, 45] })
+        expect(copia.movimientos.map((m) => m.id)).toEqual(crearLuchador(pokedex, 4, copia.nivel).movimientos.map((m) => m.id))
+        const conDanio = crearLuchador(pokedex, 4, 1, { exp: 1000, movimientos: [99999, 45, 52] })
+        expect(conDanio.movimientos.map((m) => m.id)).toEqual([45, 52])
     })
     it('curar restaura salud y PP', () => {
         const l = crearLuchador(pokedex, 4, 10)

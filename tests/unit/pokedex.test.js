@@ -26,8 +26,18 @@ describe('datos generados', () => {
 })
 
 describe('movimientosAlNivel', () => {
-    it('devuelve los movimientos de daño aprendidos hasta ese nivel', () => {
-        expect(nombres(movimientosAlNivel(pokedex, pokedex.especie(4), 10))).toEqual(['Arañazo', 'Ascuas'])
+    it('devuelve los movimientos aprendidos hasta ese nivel, incluidos los de estado', () => {
+        expect(nombres(movimientosAlNivel(pokedex, pokedex.especie(4), 8))).toEqual(['Arañazo', 'Gruñido', 'Ascuas'])
+        expect(nombres(movimientosAlNivel(pokedex, pokedex.especie(4), 10))).toEqual(['Arañazo', 'Gruñido', 'Ascuas', 'Pantalla de Humo'])
+    })
+    it('siempre incluye al menos un movimiento de daño', () => {
+        for (const especie of pokedex.especies()) {
+            for (const nivel of [5, 10, 30, 60, 100]) {
+                const ids = movimientosAlNivel(pokedex, especie, nivel)
+                expect(ids.length).toBeLessThanOrEqual(4)
+                expect(ids.some((id) => pokedex.movimiento(id).clase !== 'estado')).toBe(true)
+            }
+        }
     })
     it('conserva solo los últimos cuatro', () => {
         const ids = movimientosAlNivel(pokedex, pokedex.especie(6), 100)
@@ -45,8 +55,9 @@ describe('movimientosAlNivel', () => {
 describe('crearLuchador', () => {
     it('arma el luchador con salud, nivel y PP', () => {
         const l = crearLuchador(pokedex, 4, 10)
-        expect(l).toMatchObject({ id: 4, nombre: 'CHARMANDER', nivel: 10, tipos: ['fire'], saludMax: 29, salud: 29 })
+        expect(l).toMatchObject({ id: 4, nombre: 'CHARMANDER', nivel: 10, tipos: ['fire'], saludMax: 29, salud: 29, estado: null })
         expect(l.stats).toEqual({ hp: 29, atk: 16, def: 15, spa: 18, spd: 16, spe: 19 })
-        expect(l.movimientos).toEqual([{ id: 10, pp: 35, ppMax: 35 }, { id: 52, pp: 25, ppMax: 25 }])
+        expect(l.movimientos[0]).toEqual({ id: 10, pp: 35, ppMax: 35 })
+        expect(Object.values(l.etapas).every((e) => e === 0)).toBe(true)
     })
 })

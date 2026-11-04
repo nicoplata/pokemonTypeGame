@@ -182,3 +182,23 @@
         margin-bottom: 16px;
     }
 }
+
+.chipEstado {
+    display: inline-block;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-size: 7px;
+    vertical-align: middle;
+    color: #ffffff;
+    background-color: #777777;
+
+    &[hidden] {
+        display: none;
+    }
+
+    &[data-estado='burn'] { background-color: #e0552f; }
+    &[data-estado='poison'] { background-color: #a33ea1; }
+    &[data-estado='paralysis'] { background-color: #b89a00; }
+    &[data-estado='sleep'] { background-color: #6b6b8c; }
+    &[data-estado='freeze'] { background-color: #3a8fb7; }
+}

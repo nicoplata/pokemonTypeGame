@@ -1,6 +1,7 @@
 // Experiencia, subida de nivel, movimientos nuevos y evolución.
 
 import { calcularEstadisticas } from './estadisticas.js'
+import { curarEstado, reiniciarEtapas } from './estados.js'
 import { movimientoSoportado } from './pokedex.js'
 
 export const NIVEL_MAXIMO = 100
@@ -118,8 +119,10 @@ export function evolucionar (pokedex, luchador) {
     return { tipo: 'evoluciona', nombre: anterior, nuevoNombre: luchador.nombre, id: especie.id }
 }
 
-// Centro Pokémon: salud y PP al máximo.
+// Centro Pokémon: salud y PP al máximo, sin estados ni cambios de etapa.
 export function curar (luchador) {
     luchador.salud = luchador.saludMax
+    curarEstado(luchador)
+    reiniciarEtapas(luchador)
     for (const m of luchador.movimientos) m.pp = m.ppMax
 }

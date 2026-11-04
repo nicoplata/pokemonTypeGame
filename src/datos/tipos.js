@@ -29,3 +29,12 @@ export const EFECTIVIDAD = {
     steel: { fire: 0.5, water: 0.5, electric: 0.5, ice: 2, rock: 2, steel: 0.5, fairy: 2 },
     fairy: { fire: 0.5, fighting: 2, poison: 0.5, dragon: 2, dark: 2, steel: 0.5 }
 }
+
+// Estados alterados: nombre y abreviatura.
+export const ESTADOS_ES = {
+    burn: { nombre: 'QUEMADO', corto: 'QUE' },
+    poison: { nombre: 'ENVENENADO', corto: 'ENV' },
+    paralysis: { nombre: 'PARALIZADO', corto: 'PAR' },
+    sleep: { nombre: 'DORMIDO', corto: 'DOR' },
+    freeze: { nombre: 'CONGELADO', corto: 'CON' }
+}

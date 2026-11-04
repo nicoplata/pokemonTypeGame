@@ -4,7 +4,7 @@ import {
     necesitaReemplazo, resolverTurnoEquipos
 } from '../../src/motor/equipos.js'
 import { crearLuchador } from '../../src/motor/luchador.js'
-import { pokedex, secuencia } from './ayudas.js'
+import { indiceDe, pokedex, secuencia } from './ayudas.js'
 
 const equipo = (...ids) => ids.map((id) => crearLuchador(pokedex, id, 10))
 const atacar = (eleccion = 0) => ({ tipo: 'movimiento', eleccion })
@@ -43,7 +43,7 @@ describe('debilitados y fin del combate', () => {
     it('pide reemplazo cuando el del campo se debilita y quedan compañeros', () => {
         const c = crearCombate(equipo(4), equipo(152, 155))
         c.rival.equipo[0].salud = 1
-        resolverTurnoEquipos(pokedex, c, { jugador: atacar(1), rival: atacar(0) }, secuencia(0.5))
+        resolverTurnoEquipos(pokedex, c, { jugador: atacar(indiceDe(c.jugador.equipo[0], 'ember')), rival: atacar(0) }, secuencia(0.5))
         expect(necesitaReemplazo(c, 'rival')).toBe(true)
         expect(ganador(c)).toBe(null)
         const evento = cambiar(c, 'rival', 1)

@@ -33,7 +33,9 @@ test('la Pokédex lateral muestra datos y se bloquea al elegir inicial', async (
     await expect(page.locator('#cardJugador [data-campo="salud"]')).toHaveText('25/25')
     await expect(page.locator('#cardJugador [data-campo="tipo"]')).toHaveText('FUEGO')
     await expect(page.locator('#cardJugador [data-campo="nivel"]')).toHaveText('8')
-    await expect(page.locator('#answers button.movimiento')).toHaveText(['ARAÑAZONORMAL 35/35', 'ASCUASFUEGO 25/25'])
+    await expect(page.locator('#answers button.movimiento')).toHaveText(['ARAÑAZONORMAL 35/35', 'GRUÑIDONORMAL 40/40', 'ASCUASFUEGO 25/25'])
+    await expect(page.locator('#answers button.movimiento.deEstado')).toHaveText(['GRUÑIDONORMAL 40/40'])
+    await expect(page.locator('#cardJugador [data-campo="estado"]')).toHaveText('-')
     expect(errores).toEqual([])
 })
 
@@ -245,7 +247,7 @@ test('gana experiencia al derrotar a un rival y sube de nivel', async ({ page })
         if (/rival se debilitó/.test(texto)) vistos.add('debilitado')
         if (/ganó \d+ puntos de experiencia/.test(texto)) vistos.add('exp')
         if (await modal.isVisible()) break
-        const movimiento = page.locator('#answers button.movimiento:enabled')
+        const movimiento = page.locator('#answers button.movimiento.deDanio:enabled')
         await ((await movimiento.count()) ? movimiento.first() : botones(page).first()).click()
     }
     // Cada vez que cae un rival, el equipo gana experiencia.
@@ -275,5 +277,38 @@ test('el sonido suena tras la primera interacción y se puede silenciar', async 
     await expect(boton).toHaveText('♪ SIN SONIDO')
     await page.reload()
     await expect(page.locator('#botonSonido')).toHaveAttribute('aria-pressed', 'true')
+    expect(errores).toEqual([])
+})
+
+test('los estados alterados se muestran en la escena y en la ficha', async ({ page }) => {
+    // Pikachu de nivel 20 con Onda Trueno (86) e Impactrueno (84).
+    const equipo = [{ id: 25, exp: 8000, movimientos: [86, 84] }, { id: 7, exp: 8000, movimientos: [] }, { id: 1, exp: 8000, movimientos: [] }]
+    const errores = await prepararPagina(page, { progreso: { nombre: 'ASH', victorias: 0, derrotas: 0, equipo } })
+    await avanzar(page, 'Bienvenido')
+    await continuar(page)
+    await avanzar(page, 'conocerte', 'camino', 'ligera')
+    await botones(page).filter({ hasText: 'SEGUIR' }).click()
+    await avanzar(page, 'listo', 'acción', 'entrenamiento')
+    await elegirPokemon(page, 'buscar:squirtle')
+    await avanzar(page, 'también tendrá un equipo', 'Recuerda')
+    await esperarTexto(page, 'usarás primero')
+
+    const textos = []
+    await botones(page).filter({ hasText: 'ONDA TRUENO' }).click()
+    // Avanza hasta la siguiente pregunta guardando lo que dice el profesor.
+    while (!(await textoOak(page).textContent()).includes('usarás ahora')) {
+        await expect(botones(page).first()).toBeVisible()
+        textos.push(await textoOak(page).textContent())
+        if ((await textoOak(page).textContent()).includes('usarás ahora')) break
+        if (await page.locator('#modal[open]').isVisible()) break
+        await botones(page).first().click()
+    }
+    if (textos.some((t) => t.includes('ONDA TRUENO. ¡SQUIRTLE rival está paralizado!'))) {
+        await expect(page.locator('#escena [data-lado="rival"] [data-e="estado"]')).toHaveText('PAR')
+        await expect(page.locator('#cardRival [data-campo="estado"]')).toHaveText('PARALIZADO')
+    } else {
+        // Onda Trueno tiene 90 % de precisión.
+        expect(textos.some((t) => t.includes('ONDA TRUENO. ¡Pero falló!'))).toBe(true)
+    }
     expect(errores).toEqual([])
 })

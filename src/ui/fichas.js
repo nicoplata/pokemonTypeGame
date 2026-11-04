@@ -1,6 +1,6 @@
 // Tarjetas con los datos de cada Pokémon.
 
-import { TIPOS_ES } from '../datos/tipos.js'
+import { ESTADOS_ES, TIPOS_ES } from '../datos/tipos.js'
 import { IMAGENES_LOCALES, imagenPokemon, spritePokemon } from '../datos/juego.js'
 import { progresoDeNivel } from '../motor/experiencia.js'
 import { reducirMovimiento } from './dom.js'
@@ -19,6 +19,7 @@ export function mostrarFicha (card, luchador) {
     imagen.hidden = false
     campo(card, 'nivel').textContent = luchador.nivel
     campo(card, 'tipo').textContent = nombreTipos(luchador.tipos)
+    mostrarEstadoEnFicha(card, luchador.estado)
     campo(card, 'ataque').textContent = `${luchador.stats.atk} / ${luchador.stats.spa}`
     campo(card, 'defensa').textContent = `${luchador.stats.def} / ${luchador.stats.spd}`
     campo(card, 'velocidad').textContent = luchador.stats.spe
@@ -31,6 +32,10 @@ export function actualizarExperiencia (card, luchador) {
     if (!barra) return
     const progreso = luchador.crecimiento ? progresoDeNivel(luchador.crecimiento, luchador.nivel, luchador.exp) : 0
     barra.style.width = `${progreso * 100}%`
+}
+
+export function mostrarEstadoEnFicha (card, estado) {
+    campo(card, 'estado').textContent = estado ? ESTADOS_ES[estado].nombre : '-'
 }
 
 export function actualizarSalud (card, salud, saludMax) {
@@ -67,7 +72,7 @@ export function mostrarEquipo (card, equipo, indiceActivo, { ocultar = false } =
 }
 
 export function limpiarFicha (card) {
-    for (const nombre of ['nombre', 'nivel', 'salud', 'tipo', 'ataque', 'defensa', 'velocidad']) {
+    for (const nombre of ['nombre', 'nivel', 'salud', 'tipo', 'estado', 'ataque', 'defensa', 'velocidad']) {
         campo(card, nombre).textContent = '-'
     }
     const imagen = campo(card, 'imagen')

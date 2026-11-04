@@ -5,7 +5,8 @@
 //   { tipo: 'cambio', indice }        (índice del compañero que entra)
 // Los cambios ocurren antes que los movimientos.
 
-import { ejecutarMovimientos, elegirMovimientoIA, mejorMovimiento, prepararMovimiento, quien, salud } from './combate.js'
+import { ejecutarMovimientos, elegirMovimientoIA, mayorDanio, prepararMovimiento, quien, salud } from './combate.js'
+import { reiniciarEtapas } from './estados.js'
 
 export const LADOS = ['jugador', 'rival']
 export const otroLado = (lado) => (lado === 'jugador' ? 'rival' : 'jugador')
@@ -38,6 +39,9 @@ export const necesitaReemplazo = (combate, lado) =>
 export function cambiar (combate, lado, indice) {
     if (!disponiblesParaCambio(combate, lado).includes(indice)) throw new Error(`Cambio inválido: ${lado} ${indice}`)
     const sale = activo(combate, lado)
+    // Al salir del campo se pierden los cambios de estadísticas (no el estado).
+    reiniciarEtapas(sale)
+    sale.amedrentado = false
     combate[lado].activo = indice
     const entra = activo(combate, lado)
     return { tipo: 'cambio', ...quien(entra), ...salud(entra), indice, sale: sale.salud > 0 ? sale.nombre : null }
@@ -51,7 +55,7 @@ export function resolverTurnoEquipos (pokedex, combate, acciones, azar = Math.ra
     const movimientos = LADOS
         .filter((lado) => acciones[lado].tipo === 'movimiento')
         .map((lado) => prepararMovimiento(pokedex, activo(combate, lado), activo(combate, otroLado(lado)), acciones[lado].eleccion))
-    eventos.push(...ejecutarMovimientos(movimientos, azar))
+    eventos.push(...ejecutarMovimientos(movimientos, azar, LADOS.map((lado) => activo(combate, lado))))
     return eventos
 }
 
@@ -61,7 +65,7 @@ export function mejorCompanero (pokedex, combate, lado, candidatos) {
     let mejor = candidatos[0]
     let mejorDanio = -1
     for (const indice of candidatos) {
-        const { danio } = mejorMovimiento(pokedex, combate[lado].equipo[indice], enfrente)
+        const danio = mayorDanio(pokedex, combate[lado].equipo[indice], enfrente)
         if (danio > mejorDanio) { mejor = indice; mejorDanio = danio }
     }
     return { indice: mejor, danio: mejorDanio }
@@ -73,7 +77,7 @@ export function elegirAccionIA (pokedex, combate, lado = 'rival', azar = Math.ra
     const yo = activo(combate, lado)
     const enfrente = activo(combate, otroLado(lado))
     const candidatos = disponiblesParaCambio(combate, lado)
-    if (candidatos.length && mejorMovimiento(pokedex, yo, enfrente).danio === 0) {
+    if (candidatos.length && mayorDanio(pokedex, yo, enfrente) === 0) {
         const companero = mejorCompanero(pokedex, combate, lado, candidatos)
         if (companero.danio > 0) return { tipo: 'cambio', indice: companero.indice }
     }

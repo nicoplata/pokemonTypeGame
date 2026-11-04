@@ -20,13 +20,16 @@ function opcionesMovimientos (pokedex, luchador) {
     }
     return luchador.movimientos.map((m, indice) => {
         const mov = pokedex.movimiento(m.id)
-        const potencia = mov.potencia ? `Potencia ${mov.potencia}` : 'Daño fijo'
         const precision = mov.precision ? `precisión ${mov.precision}%` : 'nunca falla'
+        const deEstado = mov.clase === 'estado'
+        const descripcion = deEstado
+            ? `De estado · ${precision}`
+            : `${mov.potencia ? `Potencia ${mov.potencia}` : 'Daño fijo'} · ${precision} · ${mov.clase === 'fisico' ? 'físico' : 'especial'}`
         return {
             texto: mov.nombre.toUpperCase(),
             detalle: `${nombreTipo(mov.tipo)} ${m.pp}/${m.ppMax}`,
-            titulo: `${potencia} · ${precision} · ${mov.clase === 'fisico' ? 'físico' : 'especial'}`,
-            clase: `movimiento tipo-${mov.tipo}`,
+            titulo: descripcion,
+            clase: `movimiento tipo-${mov.tipo}${deEstado ? ' deEstado' : ' deDanio'}`,
             deshabilitado: m.pp <= 0,
             valor: indice
         }

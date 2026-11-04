@@ -5,7 +5,7 @@ import {
 } from '../../src/motor/combate.js'
 import { crearLuchador } from '../../src/motor/luchador.js'
 import { construirPasos } from '../../src/motor/mensajes.js'
-import { idMovimiento, pokedex, secuencia } from './ayudas.js'
+import { idMovimiento, indiceDe, pokedex, secuencia } from './ayudas.js'
 
 const luchador = (id, lado, nivel = 10) => ({ ...crearLuchador(pokedex, id, nivel), lado })
 const mov = (clave) => pokedex.movimiento(idMovimiento(clave))
@@ -107,9 +107,10 @@ describe('resolverTurno', () => {
     it('ejecuta ambos movimientos y descuenta PP', () => {
         const j = luchador(4, 'jugador')
         const r = luchador(152, 'rival')
-        const eventos = resolverTurno(pokedex, j, 1, r, 0, secuencia(0.5))
+        const ascuas = indiceDe(j, 'ember')
+        const eventos = resolverTurno(pokedex, j, ascuas, r, 0, secuencia(0.5))
         expect(eventos.map((e) => e.tipo)).toEqual(['usa', 'danio', 'usa', 'danio'])
-        expect(j.movimientos[1].pp).toBe(24)
+        expect(j.movimientos[ascuas].pp).toBe(24)
         expect(r.movimientos[0].pp).toBe(34)
         expect(eventos[1]).toMatchObject({ lado: 'rival', multiplicador: 2, salud: r.salud })
     })
@@ -117,7 +118,7 @@ describe('resolverTurno', () => {
         const j = luchador(4, 'jugador')
         const r = luchador(152, 'rival')
         r.salud = 1
-        const eventos = resolverTurno(pokedex, j, 1, r, 0, secuencia(0))
+        const eventos = resolverTurno(pokedex, j, indiceDe(j, 'ember'), r, 0, secuencia(0))
         expect(eventos.map((e) => e.tipo)).toEqual(['usa', 'danio', 'debilitado'])
         expect(r.salud).toBe(0)
     })
@@ -140,7 +141,7 @@ describe('elegirMovimientoIA', () => {
     it('elige el movimiento que más daño hace', () => {
         const r = luchador(4, 'rival')
         const j = luchador(152, 'jugador')
-        expect(elegirMovimientoIA(pokedex, r, j, secuencia(0.9))).toBe(1) // Ascuas
+        expect(elegirMovimientoIA(pokedex, r, j, secuencia(0.9))).toBe(indiceDe(r, 'ember'))
     })
     it('a veces elige al azar', () => {
         const r = luchador(4, 'rival')

@@ -25,6 +25,18 @@ prioridad (como Ataque Rápido) golpean primero; si no, ataca primero el más
 veloz. El rival elige el movimiento que más daño le hace, aunque a veces
 improvisa.
 
+También hay movimientos de estado y efectos secundarios:
+
+- **Estados alterados**: quemado (pierde 1/16 de salud por turno y hace la
+  mitad de daño físico), envenenado (pierde 1/8 por turno), paralizado (más
+  lento y a veces no se mueve), dormido (de 1 a 3 turnos) y congelado (no se
+  mueve hasta descongelarse). Algunos tipos son inmunes (Fuego no se quema,
+  Eléctrico no se paraliza...).
+- **Cambios de estadísticas** de −6 a +6 (Gruñido, Danza Espada, Ataque
+  Arena...), que se pierden al salir del campo.
+- **Curación** (Recuperación), **drenaje** (Absorber), **daño de retroceso**
+  (Doble Filo) y **retroceder** (Mordisco).
+
 El daño usa la fórmula de los juegos: depende del nivel, de la potencia, del
 ataque del que golpea contra la defensa del que recibe (física o especial
 según el movimiento), con un 50 % extra si el movimiento es del mismo tipo

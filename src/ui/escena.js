@@ -3,6 +3,7 @@
 // terminar (o al instante si se prefieren menos animaciones).
 
 import { spriteEspalda, spritePokemon } from '../datos/juego.js'
+import { ESTADOS_ES } from '../datos/tipos.js'
 import { $, reducirMovimiento } from './dom.js'
 
 const escena = $('#escena')
@@ -54,6 +55,14 @@ export function actualizarSaludEscena (lado, salud, saludMax) {
     parte(lado, 'salud').textContent = `${salud}/${saludMax}`
 }
 
+export function mostrarEstadoEnEscena (lado, estado) {
+    const chip = parte(lado, 'estado')
+    chip.hidden = !estado
+    chip.textContent = estado ? ESTADOS_ES[estado].corto : ''
+    chip.title = estado ? ESTADOS_ES[estado].nombre : ''
+    chip.dataset.estado = estado ?? ''
+}
+
 export function ponerEnEscena (lado, luchador) {
     const sprite = parte(lado, 'sprite')
     sprite.dataset.id = luchador.id
@@ -61,6 +70,7 @@ export function ponerEnEscena (lado, luchador) {
     sprite.style.opacity = luchador.salud > 0 ? '' : '0'
     parte(lado, 'nombre').textContent = luchador.nombre
     parte(lado, 'nivel').textContent = `Nv.${luchador.nivel}`
+    mostrarEstadoEnEscena(lado, luchador.estado)
     actualizarSaludEscena(lado, luchador.salud, luchador.saludMax)
 }
 
@@ -120,6 +130,15 @@ export async function animarDebilitado (lado) {
         { transform: 'translateY(40px)', opacity: 0 }
     ], { duration: 500, easing: 'ease-in' })
     sprite.style.opacity = '0'
+}
+
+// Destello de color al recibir un estado o un cambio de estadísticas.
+export function animarDestello (lado, color) {
+    return animar(parte(lado, 'sprite'), [
+        { filter: 'drop-shadow(0 0 0 transparent)' },
+        { filter: `drop-shadow(0 0 10px ${color})` },
+        { filter: 'drop-shadow(0 0 0 transparent)' }
+    ], { duration: 450 })
 }
 
 export function animarSubidaDeNivel (lado) {

@@ -444,6 +444,11 @@ main .dataList dt {
   }
 }
 
+#actionPanel .movimiento.deEstado {
+  border-style: dashed;
+  border-left-style: solid;
+}
+
 .pokemonCard {
   min-height: 300px;
 }
@@ -919,4 +924,32 @@ main .dataList dt {
 }
 #actionPanel:has(#escena:not([hidden])) .chatArea {
   margin-bottom: 16px;
+}
+
+.chipEstado {
+  display: inline-block;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 7px;
+  vertical-align: middle;
+  color: #ffffff;
+  background-color: #777777;
+}
+.chipEstado[hidden] {
+  display: none;
+}
+.chipEstado[data-estado=burn] {
+  background-color: #e0552f;
+}
+.chipEstado[data-estado=poison] {
+  background-color: #a33ea1;
+}
+.chipEstado[data-estado=paralysis] {
+  background-color: #b89a00;
+}
+.chipEstado[data-estado=sleep] {
+  background-color: #6b6b8c;
+}
+.chipEstado[data-estado=freeze] {
+  background-color: #3a8fb7;
 }

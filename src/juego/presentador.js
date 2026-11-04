@@ -4,10 +4,10 @@ import { activo } from '../motor/equipos.js'
 import { construirPasos } from '../motor/mensajes.js'
 import { decir } from '../ui/dialogo.js'
 import {
-    actualizarSaludEscena, animarAtaque, animarDebilitado, animarEntrada, animarGolpe, animarSinEfecto,
-    mostrarEscena, ponerEnEscena
+    actualizarSaludEscena, animarAtaque, animarDebilitado, animarDestello, animarEntrada, animarGolpe, animarSinEfecto,
+    mostrarEscena, mostrarEstadoEnEscena, ponerEnEscena
 } from '../ui/escena.js'
-import { actualizarSalud, mostrarEquipo, mostrarFicha } from '../ui/fichas.js'
+import { actualizarSalud, mostrarEquipo, mostrarEstadoEnFicha, mostrarFicha } from '../ui/fichas.js'
 import { reproducir } from '../ui/sonido.js'
 
 function sonidoDeGolpe ({ multiplicador = 1, criticos = 0 }) {
@@ -37,8 +37,38 @@ export function crearPresentador (cards, { ocultarEquipo = {} } = {}) {
         actualizarSaludEscena(lado, salud, saludMax)
     }
 
+    function mostrarEstado (lado, estado) {
+        mostrarEstadoEnFicha(cards[lado], estado)
+        mostrarEstadoEnEscena(lado, estado)
+    }
+
     async function aplicarEvento (combate, evento) {
         switch (evento.tipo) {
+            case 'estado':
+                mostrarEstado(evento.lado, evento.estado)
+                reproducir('estado')
+                await animarDestello(evento.lado, '#a33ea1')
+                break
+            case 'despierta':
+            case 'descongela':
+                mostrarEstado(evento.lado, null)
+                break
+            case 'etapa':
+                if (evento.cambio !== 0) {
+                    reproducir(evento.cambio > 0 ? 'sube' : 'baja')
+                    await animarDestello(evento.lado, evento.cambio > 0 ? '#3d8bf2' : '#e03c31')
+                }
+                break
+            case 'danioEstado':
+                actualizarSaludDe(evento.lado, evento.salud, evento.saludMax)
+                reproducir('poco')
+                await animarGolpe(evento.lado, evento)
+                break
+            case 'drenaje':
+            case 'curacion':
+                actualizarSaludDe(evento.lado, evento.salud, evento.saludMax)
+                reproducir('curar')
+                break
             case 'usa':
                 reproducir('ataque')
                 await animarAtaque(evento.lado)

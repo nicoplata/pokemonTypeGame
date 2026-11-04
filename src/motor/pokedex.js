@@ -29,14 +29,32 @@ export function crearPokedex (datos) {
     return { especie, movimiento, especies: () => Object.values(datos.pokemon) }
 }
 
+// Movimientos de estado: provocar un estado (categoría 1), cambiar
+// estadísticas (2) o curarse (3). Se excluyen los que tienen condiciones
+// especiales (género, tipo Planta, envenenado...).
+const ESTADOS_SOPORTADOS = new Set(['burn', 'poison', 'paralysis', 'sleep', 'freeze'])
+const EFECTOS_DE_ESTADO_EXCLUIDOS = new Set([266, 340, 364, 367])
+const EFECTOS_DE_CURACION = new Set([33, 133, 215])
+
+export function movimientoDeEstadoSoportado (mov) {
+    if (EFECTOS_DE_ESTADO_EXCLUIDOS.has(mov.efecto)) return false
+    if (mov.categoria === 1) return ESTADOS_SOPORTADOS.has(mov.estado)
+    if (mov.categoria === 2) return mov.cambios.length > 0
+    if (mov.categoria === 3) return EFECTOS_DE_CURACION.has(mov.efecto) && mov.curacion > 0
+    return false
+}
+
+export const esMovimientoDeDanio = (mov) => mov.clase !== 'estado'
+
 export function movimientoSoportado (mov) {
-    if (mov.clase === 'estado') return false
+    if (mov.clase === 'estado') return movimientoDeEstadoSoportado(mov)
     if (EFECTOS_DANIO_FIJO.has(mov.efecto)) return true
     return mov.potencia !== null && EFECTOS_DE_DANIO.has(mov.efecto)
 }
 
 // Los últimos cuatro movimientos (soportados) aprendidos hasta ese nivel,
-// como en los juegos. Si no queda ninguno, conoce Placaje.
+// como en los juegos. Siempre incluye al menos uno de daño: el último que
+// aprendió o, si no aprendió ninguno, Placaje.
 export function movimientosAlNivel (pokedex, especie, nivel) {
     const ids = []
     for (const [nivelAprende, idMovimiento] of especie.aprende) {
@@ -45,5 +63,7 @@ export function movimientosAlNivel (pokedex, especie, nivel) {
         ids.push(idMovimiento)
     }
     const ultimos = ids.slice(-4)
-    return ultimos.length ? ultimos : [ID_PLACAJE]
+    if (ultimos.some((id) => esMovimientoDeDanio(pokedex.movimiento(id)))) return ultimos
+    const deDanio = ids.filter((id) => esMovimientoDeDanio(pokedex.movimiento(id))).at(-1) ?? ID_PLACAJE
+    return [deDanio, ...ultimos].slice(0, 4)
 }

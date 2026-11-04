@@ -102,7 +102,8 @@ export async function pelear (page, preferido = '') {
     for (let i = 0; i < 200; i++) {
         await expect(botones(page).first().or(modal)).toBeVisible()
         if (await modal.isVisible()) return
-        const movimientos = page.locator('#answers button.movimiento:enabled')
+        const deDanio = page.locator('#answers button.movimiento.deDanio:enabled')
+        const movimientos = (await deDanio.count()) ? deDanio : page.locator('#answers button.movimiento:enabled')
         if (await movimientos.count()) {
             const elegido = movimientos.filter({ hasText: preferido })
             await ((preferido && await elegido.count()) ? elegido.first() : movimientos.first()).click()

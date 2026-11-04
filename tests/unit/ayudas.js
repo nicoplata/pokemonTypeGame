@@ -11,3 +11,10 @@ export const secuencia = (...valores) => {
 }
 
 export const idMovimiento = (clave) => Object.values(datos.movimientos).find((m) => m.clave === clave).id
+
+// Índice de un movimiento (por su clave en inglés) dentro de un luchador.
+export function indiceDe (luchador, clave) {
+    const indice = luchador.movimientos.findIndex((m) => m.id === idMovimiento(clave))
+    if (indice < 0) throw new Error(`${luchador.nombre} no conoce ${clave}`)
+    return indice
+}

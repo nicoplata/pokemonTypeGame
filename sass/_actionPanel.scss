@@ -178,3 +178,9 @@
         }
     }
 }
+
+// Los movimientos de estado llevan el borde punteado.
+#actionPanel .movimiento.deEstado {
+    border-style: dashed;
+    border-left-style: solid;
+}
