@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
-    FORCEJEO, actuaPrimero, acierta, calcularDanio, cantidadDeGolpes, efectividad, elegirMovimientoIA, resolverTurno
+    FORCEJEO, actuaPrimero, acierta, calcularDanio, cantidadDeGolpes, efectividad, elegirMovimientoIA,
+    probabilidadCritico, resolverTurno
 } from '../../src/motor/combate.js'
 import { crearLuchador } from '../../src/motor/luchador.js'
 import { construirPasos } from '../../src/motor/mensajes.js'
@@ -21,23 +22,50 @@ describe('efectividad', () => {
 })
 
 describe('calcularDanio', () => {
-    const charmander = luchador(4, 'jugador')
-    const chikorita = luchador(152, 'rival')
-    it('usa el ataque especial para movimientos especiales y aplica tipos', () => {
-        // potencia 40, at. esp. 60, x2 => 0.4 * 60 * 0.6 * 2 = 28.8
-        expect(calcularDanio(charmander, chikorita, mov('ember'), secuencia(1))).toEqual({ danio: 29, multiplicador: 2 })
+    const charmander = luchador(4, 'jugador') // nivel 10: at. 16, at. esp. 18
+    const chikorita = luchador(152, 'rival') // nivel 10: def. 19, def. esp. 19
+
+    // azar: primero decide el crítico y después la variación (0 => 85 %, 0,999 => 100 %).
+    it('aplica la fórmula con STAB y efectividad', () => {
+        // ((2·10/5+2)·40·18/19)/50 + 2 = 6 -> STAB 9 -> x2 18
+        expect(calcularDanio(charmander, chikorita, mov('ember'), secuencia(0.99, 0.999)))
+            .toEqual({ danio: 18, multiplicador: 2, critico: false })
     })
-    it('usa el ataque físico para movimientos físicos', () => {
-        // potencia 40, ataque 52 => 12.48
-        expect(calcularDanio(charmander, chikorita, mov('scratch'), secuencia(1))).toEqual({ danio: 12, multiplicador: 1 })
+    it('aplica la variación mínima del 85 %', () => {
+        // 6 -> 85 % = 5 -> STAB 7 -> x2 14
+        expect(calcularDanio(charmander, chikorita, mov('ember'), secuencia(0.99, 0)).danio).toBe(14)
+    })
+    it('los golpes críticos multiplican por 1,5', () => {
+        // 6 -> crítico 9 -> STAB 13 -> x2 26
+        expect(calcularDanio(charmander, chikorita, mov('ember'), secuencia(0, 0.999)))
+            .toEqual({ danio: 26, multiplicador: 2, critico: true })
+    })
+    it('los movimientos físicos usan ataque y defensa, sin STAB si no coincide el tipo', () => {
+        // ((6·40·16)/19)/50 + 2 = 6
+        expect(calcularDanio(charmander, chikorita, mov('scratch'), secuencia(0.99, 0.999)).danio).toBe(6)
+    })
+    it('el daño fijo ignora estadísticas y efectividad, pero no la inmunidad', () => {
+        const clefairy = luchador(35, 'rival') // tipo Hada: inmune a Dragón
+        expect(calcularDanio(charmander, chikorita, mov('dragon-rage'))).toEqual({ danio: 40, multiplicador: 1, critico: false })
+        expect(calcularDanio(charmander, clefairy, mov('dragon-rage')).danio).toBe(0)
+        expect(calcularDanio(charmander, chikorita, mov('seismic-toss')).danio).toBe(10)
+        expect(calcularDanio(charmander, chikorita, mov('super-fang')).danio).toBe(15)
     })
     it('no hace daño si hay inmunidad', () => {
         const gastly = luchador(92, 'rival')
-        expect(calcularDanio(charmander, gastly, mov('scratch'))).toEqual({ danio: 0, multiplicador: 0 })
+        expect(calcularDanio(charmander, gastly, mov('scratch'))).toEqual({ danio: 0, multiplicador: 0, critico: false })
     })
-    it('Forcejeo no tiene tipo', () => {
+    it('Forcejeo no tiene tipo ni STAB', () => {
         const gastly = luchador(92, 'rival')
-        expect(calcularDanio(charmander, gastly, mov('struggle'), secuencia(1)).multiplicador).toBe(1)
+        expect(calcularDanio(charmander, gastly, mov('struggle'), secuencia(0.99)).multiplicador).toBe(1)
+    })
+    it('hace al menos 1 de daño', () => {
+        const fuerte = luchador(95, 'rival', 50) // Onix nivel 50
+        expect(calcularDanio(charmander, fuerte, mov('scratch'), secuencia(0.99, 0)).danio).toBe(1)
+    })
+    it('la probabilidad de crítico depende del movimiento', () => {
+        expect(probabilidadCritico(mov('tackle'))).toBeCloseTo(1 / 24)
+        expect(probabilidadCritico(mov('razor-leaf'))).toBe(1 / 8)
     })
 })
 
@@ -79,7 +107,7 @@ describe('resolverTurno', () => {
     it('ejecuta ambos movimientos y descuenta PP', () => {
         const j = luchador(4, 'jugador')
         const r = luchador(152, 'rival')
-        const eventos = resolverTurno(pokedex, j, 1, r, 0, secuencia(0))
+        const eventos = resolverTurno(pokedex, j, 1, r, 0, secuencia(0.5))
         expect(eventos.map((e) => e.tipo)).toEqual(['usa', 'danio', 'usa', 'danio'])
         expect(j.movimientos[1].pp).toBe(24)
         expect(r.movimientos[0].pp).toBe(34)
@@ -139,6 +167,13 @@ describe('construirPasos', () => {
             'CHARMANDER usó ASCUAS. ¡Es súper eficaz! Hizo 29 de daño.',
             'CHIKORITA rival usó PLACAJE. ¡Pero falló!'
         ])
+    })
+    it('anuncia los golpes críticos', () => {
+        const pasos = construirPasos([
+            { tipo: 'usa', lado: 'jugador', movimiento: 'Ascuas' },
+            { tipo: 'danio', lado: 'rival', cantidad: 26, multiplicador: 2, golpes: 1, criticos: 1, salud: 4 }
+        ], luchadores)
+        expect(pasos[0].texto).toBe('CHARMANDER usó ASCUAS. ¡Un golpe crítico! ¡Es súper eficaz! Hizo 26 de daño.')
     })
     it('anuncia golpes múltiples, inmunidad y debilitados aparte', () => {
         const pasos = construirPasos([

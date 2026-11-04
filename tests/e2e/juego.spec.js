@@ -25,7 +25,7 @@ test('la Pokédex lateral muestra datos y se bloquea al elegir inicial', async (
     await llegarAlCombate(page, { inicial: 'charmander', rival: 'chikorita' })
     await expect(page.locator('.pokemonLink').first()).toBeDisabled()
     await expect(page.locator('#trainerPokemon')).toHaveText('CHARMANDER')
-    await expect(page.locator('#cardJugador [data-campo="salud"]')).toHaveText('78/78')
+    await expect(page.locator('#cardJugador [data-campo="salud"]')).toHaveText('29/29')
     await expect(page.locator('#cardJugador [data-campo="tipo"]')).toHaveText('FUEGO')
     await expect(page.locator('#cardJugador [data-campo="nivel"]')).toHaveText('10')
     await expect(page.locator('#answers button.movimiento')).toHaveText(['ARAÑAZONORMAL 35/35', 'ASCUASFUEGO 25/25'])

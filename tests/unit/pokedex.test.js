@@ -45,7 +45,8 @@ describe('movimientosAlNivel', () => {
 describe('crearLuchador', () => {
     it('arma el luchador con salud, nivel y PP', () => {
         const l = crearLuchador(pokedex, 4, 10)
-        expect(l).toMatchObject({ id: 4, nombre: 'CHARMANDER', nivel: 10, tipos: ['fire'], saludMax: 78, salud: 78 })
+        expect(l).toMatchObject({ id: 4, nombre: 'CHARMANDER', nivel: 10, tipos: ['fire'], saludMax: 29, salud: 29 })
+        expect(l.stats).toEqual({ hp: 29, atk: 16, def: 15, spa: 18, spd: 16, spe: 19 })
         expect(l.movimientos).toEqual([{ id: 10, pp: 35, ppMax: 35 }, { id: 52, pp: 25, ppMax: 25 }])
     })
 })

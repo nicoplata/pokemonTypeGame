@@ -1,20 +1,19 @@
 // Crea un Pokémon listo para combatir.
 
+import { calcularEstadisticas } from './estadisticas.js'
 import { movimientosAlNivel } from './pokedex.js'
-
-const MULTIPLICADOR_SALUD = 2
 
 export function crearLuchador (pokedex, idEspecie, nivel) {
     const especie = pokedex.especie(idEspecie)
-    const saludMax = especie.base.hp * MULTIPLICADOR_SALUD
+    const stats = calcularEstadisticas(especie.base, nivel)
     return {
         id: especie.id,
         nombre: especie.nombre.toUpperCase(),
         tipos: especie.tipos,
         nivel,
-        stats: { ...especie.base },
-        saludMax,
-        salud: saludMax,
+        stats,
+        saludMax: stats.hp,
+        salud: stats.hp,
         movimientos: movimientosAlNivel(pokedex, especie, nivel).map((id) => {
             const mov = pokedex.movimiento(id)
             return { id, pp: mov.pp, ppMax: mov.pp }

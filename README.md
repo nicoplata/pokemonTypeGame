@@ -19,6 +19,12 @@ prioridad (como Ataque Rápido) golpean primero; si no, ataca primero el más
 veloz. El rival elige el movimiento que más daño le hace, aunque a veces
 improvisa.
 
+El daño usa la fórmula de los juegos: depende del nivel, de la potencia, del
+ataque del que golpea contra la defensa del que recibe (física o especial
+según el movimiento), con un 50 % extra si el movimiento es del mismo tipo
+que el Pokémon (STAB), golpes críticos (x1,5) y una variación aleatoria del
+85 % al 100 %. Las estadísticas también se calculan según el nivel.
+
 Tus victorias y derrotas se guardan en el navegador (`localStorage`).
 
 ## Desarrollo

@@ -38,7 +38,10 @@ export function construirPasos (eventos, luchadores) {
                 agregar(`No afecta a ${nombre(evento.lado)}...`, evento)
                 break
             case 'danio': {
-                const partes = [textoEfectividad(evento.multiplicador)]
+                const partes = []
+                if (evento.criticos === 1) partes.push('¡Un golpe crítico!')
+                else if (evento.criticos > 1) partes.push(`¡${evento.criticos} golpes críticos!`)
+                partes.push(textoEfectividad(evento.multiplicador))
                 if (evento.golpes > 1) partes.push(`¡Golpeó ${evento.golpes} veces!`)
                 partes.push(`Hizo ${evento.cantidad} de daño.`)
                 agregar(partes.filter(Boolean).join(' '), evento)

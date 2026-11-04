@@ -5,6 +5,10 @@ export const ID_FORCEJEO = 165
 
 // Efectos de movimientos de daño que el motor sabe resolver. Los efectos
 // secundarios (estados, cambios de estadísticas) se ignoran por ahora.
+// Daño fijo: 42 (Furia Dragón), 131 (Bomba Sónica), 88 (nivel del usuario),
+// 41 (mitad de la salud del objetivo).
+export const EFECTOS_DANIO_FIJO = new Set([41, 42, 88, 131])
+
 const EFECTOS_DE_DANIO = new Set([
     1, 3, 4, 5, 6, 7, 18, 30, 32, 37, 43, 44, 45, 49, 69, 70, 71, 72, 73, 74, 77, 104, 126, 139, 140, 141,
     147, 148, 150, 151, 153, 183, 199, 201, 203, 205, 208, 210, 219, 230, 254, 261, 262, 270, 274, 275,
@@ -26,7 +30,9 @@ export function crearPokedex (datos) {
 }
 
 export function movimientoSoportado (mov) {
-    return mov.clase !== 'estado' && mov.potencia !== null && EFECTOS_DE_DANIO.has(mov.efecto)
+    if (mov.clase === 'estado') return false
+    if (EFECTOS_DANIO_FIJO.has(mov.efecto)) return true
+    return mov.potencia !== null && EFECTOS_DE_DANIO.has(mov.efecto)
 }
 
 // Los últimos cuatro movimientos (soportados) aprendidos hasta ese nivel,
