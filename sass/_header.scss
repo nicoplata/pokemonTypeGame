@@ -31,3 +31,26 @@ header {
         }
     }
 }
+
+.botonSonido {
+    margin-left: auto;
+    padding: 10px 14px;
+    background-color: #ffffff;
+    border: 2px solid $borde;
+    border-radius: 10px;
+    font-size: 10px;
+    cursor: pointer;
+
+    &:hover {
+        border-color: $texto;
+    }
+
+    &[aria-pressed='true'] {
+        color: #777777;
+        text-decoration: line-through;
+    }
+
+    @media (max-width: $movil) {
+        margin-left: 0;
+    }
+}

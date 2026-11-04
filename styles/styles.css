@@ -165,6 +165,28 @@ header h1 {
   }
 }
 
+.botonSonido {
+  margin-left: auto;
+  padding: 10px 14px;
+  background-color: #ffffff;
+  border: 2px solid lightgray;
+  border-radius: 10px;
+  font-size: 10px;
+  cursor: pointer;
+}
+.botonSonido:hover {
+  border-color: #111111;
+}
+.botonSonido[aria-pressed=true] {
+  color: #777777;
+  text-decoration: line-through;
+}
+@media (max-width: 760px) {
+  .botonSonido {
+    margin-left: 0;
+  }
+}
+
 nav {
   grid-area: nav;
   display: flex;

@@ -36,6 +36,11 @@ barras de salud, y anima los ataques, los golpes (con el daño flotando), los
 debilitados y las entradas. Si tu sistema pide menos animaciones, el juego
 las omite.
 
+El juego tiene sonido 8-bit generado en el navegador (Web Audio): efectos
+para ataques, golpes, súper eficaz, críticos, debilitados, cambios, subidas
+de nivel y evolución, y dos músicas originales (menú y combate). El botón
+**♪ SONIDO** lo silencia y recuerda tu elección.
+
 ### Experiencia y evolución
 
 Cada vez que cae un Pokémon rival, el que lo derrotó gana experiencia y el
@@ -119,7 +124,8 @@ src/motor/           Lógica de combate (sin DOM, testeada)
 src/datos/           Textos, configuración y tabla de tipos
 src/servicios/       Carga de datos y progreso guardado
 data/pokedex.json    Pokémon y movimientos (generado desde PokéAPI)
-src/ui/              Diálogo, ventana modal y fichas
+src/ui/              Diálogo, fichas, escena, sonido y ventanas
+src/juego/           Bucle de combate, controladores y progresión
 sass/                Estilos fuente
 styles/styles.css    Estilos compilados
 tests/unit/          Tests unitarios

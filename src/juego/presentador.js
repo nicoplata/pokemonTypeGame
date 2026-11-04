@@ -8,6 +8,14 @@ import {
     mostrarEscena, ponerEnEscena
 } from '../ui/escena.js'
 import { actualizarSalud, mostrarEquipo, mostrarFicha } from '../ui/fichas.js'
+import { reproducir } from '../ui/sonido.js'
+
+function sonidoDeGolpe ({ multiplicador = 1, criticos = 0 }) {
+    if (criticos) return 'critico'
+    if (multiplicador > 1) return 'superEficaz'
+    if (multiplicador < 1) return 'poco'
+    return 'golpe'
+}
 
 // `cards` = { jugador, rival }; `ocultarEquipo` = { rival: true } oculta
 // qué Pokémon tiene ese lado hasta que los envía.
@@ -32,17 +40,23 @@ export function crearPresentador (cards, { ocultarEquipo = {} } = {}) {
     async function aplicarEvento (combate, evento) {
         switch (evento.tipo) {
             case 'usa':
+                reproducir('ataque')
                 await animarAtaque(evento.lado)
                 break
             case 'danio':
                 actualizarSaludDe(evento.lado, evento.salud, evento.saludMax)
-                if (evento.cantidad > 0) await animarGolpe(evento.lado, evento)
+                if (evento.cantidad > 0) {
+                    reproducir(sonidoDeGolpe(evento))
+                    await animarGolpe(evento.lado, evento)
+                }
                 break
             case 'retroceso':
                 actualizarSaludDe(evento.lado, evento.salud, evento.saludMax)
+                reproducir('golpe')
                 await animarGolpe(evento.lado, evento)
                 break
             case 'sinEfecto':
+                reproducir('sinEfecto')
                 await animarSinEfecto(evento.lado)
                 break
             case 'cambio': {
@@ -51,11 +65,13 @@ export function crearPresentador (cards, { ocultarEquipo = {} } = {}) {
                 ponerEnEscena(evento.lado, entra)
                 actualizarSaludDe(evento.lado, evento.salud, evento.saludMax)
                 mostrarEquipoDe(combate, evento.lado)
+                reproducir('cambio')
                 await animarEntrada(evento.lado)
                 break
             }
             case 'debilitado':
                 mostrarEquipoDe(combate, evento.lado)
+                reproducir('debilitado')
                 await animarDebilitado(evento.lado)
                 break
             default:

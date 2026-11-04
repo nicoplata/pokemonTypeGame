@@ -252,3 +252,28 @@ test('gana experiencia al derrotar a un rival y sube de nivel', async ({ page })
     expect(vistos.has('debilitado')).toBe(vistos.has('exp'))
     await expect(page.locator('#modalTitle')).toHaveText(/GANASTE|PERDISTE/)
 })
+
+test('el sonido suena tras la primera interacción y se puede silenciar', async ({ page }) => {
+    // Cuenta los osciladores creados para saber si se programaron sonidos.
+    await page.addInitScript(() => {
+        window.osciladores = 0
+        const original = AudioContext.prototype.createOscillator
+        AudioContext.prototype.createOscillator = function (...args) {
+            window.osciladores++
+            return original.apply(this, args)
+        }
+    })
+    const errores = await prepararPagina(page)
+    await esperarTexto(page, 'Bienvenido')
+    const boton = page.locator('#botonSonido')
+    await expect(boton).toHaveAttribute('aria-pressed', 'false')
+    await continuar(page)
+    await expect.poll(() => page.evaluate(() => window.osciladores)).toBeGreaterThan(0)
+
+    await boton.click()
+    await expect(boton).toHaveAttribute('aria-pressed', 'true')
+    await expect(boton).toHaveText('♪ SIN SONIDO')
+    await page.reload()
+    await expect(page.locator('#botonSonido')).toHaveAttribute('aria-pressed', 'true')
+    expect(errores).toEqual([])
+})

@@ -1,6 +1,7 @@
 // Diálogo del profesor y botones de respuesta.
 
 import { $, esperar, reducirMovimiento } from './dom.js'
+import { reproducir } from './sonido.js'
 
 const chatOak = $('#chatOak')
 const chatTrainer = $('#chatTrainer')
@@ -72,6 +73,7 @@ export function mostrarOpciones (opciones) {
         const botones = opciones.map((opcion) => {
             const boton = crearBoton(opcion)
             boton.addEventListener('click', () => {
+                reproducir('seleccion')
                 limpiarOpciones()
                 resolve(opcion.valor)
             })

@@ -8,6 +8,7 @@ import {
 import { decir } from '../ui/dialogo.js'
 import { animarEntrada, animarSubidaDeNivel, ponerEnEscena } from '../ui/escena.js'
 import { actualizarExperiencia, mostrarFicha, nombreTipo } from '../ui/fichas.js'
+import { reproducir } from '../ui/sonido.js'
 
 const nombreMovimiento = (pokedex, id) => pokedex.movimiento(id).nombre.toUpperCase()
 
@@ -46,6 +47,7 @@ export function crearRepartoDeExperiencia (pokedex, cardJugador) {
                     if (enCampo) actualizarExperiencia(cardJugador, luchador)
                     await decir(TEXTOS.expGanada(luchador.nombre, evento.cantidad))
                 } else if (evento.tipo === 'subeNivel') {
+                    reproducir('nivel')
                     if (enCampo) {
                         mostrarFicha(cardJugador, luchador)
                         ponerEnEscena('jugador', luchador)
@@ -75,6 +77,7 @@ export async function procesarEvoluciones (pokedex, equipo, card) {
             await decir(TEXTOS.evolucionDetenida(nombre))
             continue
         }
+        reproducir('evolucion')
         await animarSubidaDeNivel('jugador')
         const evento = evolucionar(pokedex, luchador)
         mostrarFicha(card, luchador)

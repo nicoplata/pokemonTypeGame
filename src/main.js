@@ -17,6 +17,7 @@ import {
 import { limpiarFicha, mostrarEquipo, mostrarFicha } from './ui/fichas.js'
 import { crearListaPokemon } from './ui/listaPokemon.js'
 import { ocultarEscena } from './ui/escena.js'
+import { alCambiarSilencio, alternarSilencio, detenerMusica, iniciarMusica, reproducir } from './ui/sonido.js'
 import { modal } from './ui/modal.js'
 import { elegirEnPokedex, prepararSelector } from './ui/selector.js'
 import { jugarCombate } from './juego/bucleCombate.js'
@@ -287,6 +288,7 @@ async function partida (esRevancha) {
     await decir(TEXTOS.consejoTipos)
     mostrarEnEntrenador()
 
+    iniciarMusica('combate')
     const ganador = await jugarCombate({
         pokedex: estado.pokedex,
         combate,
@@ -295,6 +297,8 @@ async function partida (esRevancha) {
         alDebilitarse: crearRepartoDeExperiencia(estado.pokedex, ui.cards.jugador)
     })
     const gano = ganador === 'jugador'
+    detenerMusica()
+    reproducir(gano ? 'victoria' : 'derrota')
     if (gano) progreso.victorias++
     else progreso.derrotas++
     // El equipo de combate es una copia: se traen los cambios (nivel, movimientos).
@@ -309,7 +313,9 @@ async function partida (esRevancha) {
     mostrarFicha(ui.cards.jugador, estado.equipo[0])
     mostrarEquipo(ui.cards.jugador, estado.equipo, 0)
     actualizarEntrenador()
+    reproducir('curar')
     await decir(TEXTOS.centro)
+    iniciarMusica('menu')
 
     const jugarDeNuevo = await modal({
         icono: gano ? '★' : '✖',
@@ -320,7 +326,19 @@ async function partida (esRevancha) {
     if (!jugarDeNuevo) await decir(TEXTOS.despedida, [{ texto: 'JUGAR DE NUEVO', valor: true }])
 }
 
+function prepararBotonSonido () {
+    const boton = $('#botonSonido')
+    boton.addEventListener('click', () => alternarSilencio())
+    alCambiarSilencio((silenciado) => {
+        boton.setAttribute('aria-pressed', String(silenciado))
+        boton.textContent = silenciado ? '♪ SIN SONIDO' : '♪ SONIDO'
+        boton.title = silenciado ? 'Activar el sonido' : 'Silenciar'
+    })
+}
+
 async function iniciar () {
+    prepararBotonSonido()
+    iniciarMusica('menu')
     actualizarEntrenador()
     estado.pokedex = await cargarPokedexConReintento()
     prepararPokedexLateral()
