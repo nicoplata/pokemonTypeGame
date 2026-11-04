@@ -1,8 +1,8 @@
 // Convierte los eventos del combate en los pasos que muestra el profesor.
 // Cada paso tiene un texto y los eventos que la interfaz aplica al mostrarlo.
 
-export function nombreEnCombate (luchador) {
-    return luchador.lado === 'rival' ? `${luchador.nombre} rival` : luchador.nombre
+export function nombreEnCombate ({ nombre, lado }) {
+    return lado === 'rival' ? `${nombre} rival` : nombre
 }
 
 function textoEfectividad (multiplicador) {
@@ -11,9 +11,12 @@ function textoEfectividad (multiplicador) {
     return ''
 }
 
-// `luchadores` = { jugador, rival }
-export function construirPasos (eventos, luchadores) {
-    const nombre = (lado) => nombreEnCombate(luchadores[lado])
+function textoCambio ({ lado, sale, nombre }) {
+    if (lado === 'rival') return sale ? `El rival retiró a ${sale} y envió a ${nombre}.` : `El rival envió a ${nombre}.`
+    return sale ? `¡Vuelve, ${sale}! ¡Adelante, ${nombre}!` : `¡Adelante, ${nombre}!`
+}
+
+export function construirPasos (eventos) {
     const pasos = []
     let actual = null
     const agregar = (texto, evento) => {
@@ -29,13 +32,13 @@ export function construirPasos (eventos, luchadores) {
         switch (evento.tipo) {
             case 'usa':
                 actual = null
-                agregar(`${nombre(evento.lado)} usó ${evento.movimiento.toUpperCase()}.`, evento)
+                agregar(`${nombreEnCombate(evento)} usó ${evento.movimiento.toUpperCase()}.`, evento)
                 break
             case 'falla':
                 agregar('¡Pero falló!', evento)
                 break
             case 'sinEfecto':
-                agregar(`No afecta a ${nombre(evento.lado)}...`, evento)
+                agregar(`No afecta a ${nombreEnCombate(evento)}...`, evento)
                 break
             case 'danio': {
                 const partes = []
@@ -48,11 +51,16 @@ export function construirPasos (eventos, luchadores) {
                 break
             }
             case 'retroceso':
-                agregar(`${nombre(evento.lado)} se hizo ${evento.cantidad} de daño al forcejear.`, evento)
+                agregar(`${nombreEnCombate(evento)} se hizo ${evento.cantidad} de daño al forcejear.`, evento)
+                break
+            case 'cambio':
+                actual = null
+                agregar(textoCambio(evento), evento)
+                actual = null
                 break
             case 'debilitado':
                 actual = null
-                agregar(`¡${nombre(evento.lado)} se debilitó!`, evento)
+                agregar(`¡${nombreEnCombate(evento)} se debilitó!`, evento)
                 actual = null
                 break
             default:

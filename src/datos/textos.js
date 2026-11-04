@@ -21,5 +21,12 @@ export const TEXTOS = {
     errorRed: 'No pude cargar la Pokédex. Revisá tu conexión e intentá de nuevo.',
     despedida: '¡Vuelve cuando quieras!',
     tituloInicial: 'ELIGE TU POKéMON',
+    tituloCompanero: 'ELIGE UN COMPAÑERO',
+    equipo: 'Un buen entrenador nunca viaja solo. Elige dos compañeros más para tu equipo.',
+    elegirCompanero: (numero) => `¿Quién será tu compañero número ${numero}? Te sugiero algunos, o búscalo en la Pokédex.`,
+    equipoListo: (nombres) => `¡Tu equipo está listo: ${nombres}!`,
+    equipoRival: (nombre) => `Tu rival también tendrá un equipo de tres. ¡Empieza con ${nombre}!`,
+    elegirCambio: '¿A quién quieres enviar?',
+    elegirReemplazo: '¿Qué Pokémon enviarás ahora?',
     tituloRival: 'ELIGE A TU RIVAL'
 }

@@ -244,13 +244,18 @@ main .dataList {
   display: grid;
   grid-template-columns: auto 1fr;
   column-gap: 40px;
-  row-gap: 14px;
+  row-gap: 8px;
 }
 main .dataList div {
   display: contents;
 }
 main .dataList dd {
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  min-width: 0;
+  line-height: 20px;
+}
+main .dataList dt {
+  line-height: 20px;
 }
 @media (max-width: 760px) {
   main {
@@ -375,6 +380,13 @@ main .dataList dd {
   width: calc(50% - 5px);
   border-left: 10px solid var(--color-tipo, lightgray);
 }
+#actionPanel .accionEquipo {
+  width: 100%;
+  min-height: 50px;
+}
+#actionPanel .companero img {
+  image-rendering: pixelated;
+}
 #actionPanel .optionDetail {
   font-size: 8px;
   color: #555555;
@@ -404,6 +416,9 @@ main .dataList dd {
   }
   #actionPanel .movimiento {
     width: calc(50% - 5px);
+  }
+  #actionPanel .accionEquipo {
+    width: 100%;
   }
 }
 
@@ -482,6 +497,45 @@ main .dataList dd {
     transition: none;
   }
 }
+.equipoIndicador {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  min-height: 32px;
+}
+.equipoIndicador li {
+  width: 32px;
+  height: 32px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+}
+.equipoIndicador li img {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.equipoIndicador li.activo {
+  border-color: #cc0000;
+}
+.equipoIndicador li.debilitado {
+  filter: grayscale(1);
+  opacity: 0.4;
+}
+.equipoIndicador .pokebola {
+  width: 20px;
+  height: 20px;
+  margin: 6px;
+  background: linear-gradient(to bottom, #cc0000 0 45%, #111111 45% 55%, #ffffff 55% 100%);
+  border: 2px solid #111111;
+}
+.equipoIndicador .pokebola.activo {
+  border-color: #111111;
+  box-shadow: 0 0 0 3px #f2c12e;
+}
+
 #modal {
   width: min(420px, 100% - 32px);
   padding: 30px;

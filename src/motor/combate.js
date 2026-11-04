@@ -91,15 +91,19 @@ export function actuaPrimero (a, movA, b, movB, azar = Math.random) {
     return azar() < 0.5
 }
 
+// Datos que llevan los eventos para que la interfaz sepa a quién mostrar.
+export const quien = (luchador) => ({ lado: luchador.lado, nombre: luchador.nombre })
+export const salud = (luchador) => ({ salud: luchador.salud, saludMax: luchador.saludMax })
+
 function ejecutarMovimiento (atacante, defensor, mov, azar) {
-    const eventos = [{ tipo: 'usa', lado: atacante.lado, movimiento: mov.nombre }]
+    const eventos = [{ tipo: 'usa', ...quien(atacante), movimiento: mov.nombre }]
 
     if (!acierta(mov, azar)) {
-        eventos.push({ tipo: 'falla', lado: atacante.lado })
+        eventos.push({ tipo: 'falla', ...quien(atacante) })
         return eventos
     }
     if (multiplicadorDeTipo(mov, defensor) === 0) {
-        eventos.push({ tipo: 'sinEfecto', lado: defensor.lado })
+        eventos.push({ tipo: 'sinEfecto', ...quien(defensor) })
         return eventos
     }
 
@@ -118,29 +122,31 @@ function ejecutarMovimiento (atacante, defensor, mov, azar) {
         golpesDados++
     }
     eventos.push({
-        tipo: 'danio', lado: defensor.lado, cantidad: total, multiplicador, golpes: golpesDados, criticos, salud: defensor.salud
+        tipo: 'danio', ...quien(defensor), cantidad: total, multiplicador, golpes: golpesDados, criticos, ...salud(defensor)
     })
 
     if (mov.id === ID_FORCEJEO && atacante.salud > 0) {
         const retroceso = Math.min(atacante.salud, Math.max(1, Math.floor(atacante.saludMax / 4)))
         atacante.salud -= retroceso
-        eventos.push({ tipo: 'retroceso', lado: atacante.lado, cantidad: retroceso, salud: atacante.salud })
+        eventos.push({ tipo: 'retroceso', ...quien(atacante), cantidad: retroceso, ...salud(atacante) })
     }
 
     for (const luchador of [defensor, atacante]) {
-        if (luchador.salud === 0) eventos.push({ tipo: 'debilitado', lado: luchador.lado })
+        if (luchador.salud === 0) eventos.push({ tipo: 'debilitado', ...quien(luchador) })
     }
     return eventos
 }
 
-// Resuelve un turno completo. `jugador` y `rival` deben tener `lado`.
-export function resolverTurno (pokedex, jugador, eleccionJugador, rival, eleccionRival, azar = Math.random) {
-    const acciones = [
-        { atacante: jugador, defensor: rival, mov: movimientoElegido(pokedex, jugador, eleccionJugador), eleccion: eleccionJugador },
-        { atacante: rival, defensor: jugador, mov: movimientoElegido(pokedex, rival, eleccionRival), eleccion: eleccionRival }
-    ]
-    if (!actuaPrimero(jugador, acciones[0].mov, rival, acciones[1].mov, azar)) acciones.reverse()
+// Prepara una acción de movimiento: el atacante, su rival y el movimiento real.
+export function prepararMovimiento (pokedex, atacante, defensor, eleccion) {
+    return { atacante, defensor, eleccion, mov: movimientoElegido(pokedex, atacante, eleccion) }
+}
 
+// Ordena y ejecuta acciones de movimiento. Quien está debilitado no actúa.
+export function ejecutarMovimientos (acciones, azar = Math.random) {
+    if (acciones.length === 2 && !actuaPrimero(acciones[0].atacante, acciones[0].mov, acciones[1].atacante, acciones[1].mov, azar)) {
+        acciones = [acciones[1], acciones[0]]
+    }
     const eventos = []
     for (const { atacante, defensor, mov, eleccion } of acciones) {
         if (atacante.salud === 0 || defensor.salud === 0) continue
@@ -148,6 +154,14 @@ export function resolverTurno (pokedex, jugador, eleccionJugador, rival, eleccio
         eventos.push(...ejecutarMovimiento(atacante, defensor, mov, azar))
     }
     return eventos
+}
+
+// Resuelve un turno uno contra uno. `jugador` y `rival` deben tener `lado`.
+export function resolverTurno (pokedex, jugador, eleccionJugador, rival, eleccionRival, azar = Math.random) {
+    return ejecutarMovimientos([
+        prepararMovimiento(pokedex, jugador, rival, eleccionJugador),
+        prepararMovimiento(pokedex, rival, jugador, eleccionRival)
+    ], azar)
 }
 
 // Daño esperado de un movimiento, sin azar, para que la IA compare.
@@ -159,17 +173,25 @@ export function danioEstimado (atacante, defensor, mov) {
     return Math.min(danio * golpes, defensor.salud) * precision
 }
 
+// El mejor movimiento disponible según el daño estimado.
+export function mejorMovimiento (pokedex, atacante, defensor) {
+    const disponibles = movimientosDisponibles(atacante)
+    if (disponibles.length === 0) {
+        return { eleccion: FORCEJEO, danio: danioEstimado(atacante, defensor, pokedex.movimiento(ID_FORCEJEO)) }
+    }
+    let mejor = { eleccion: disponibles[0].indice, danio: -1 }
+    for (const m of disponibles) {
+        const danio = danioEstimado(atacante, defensor, pokedex.movimiento(m.id))
+        if (danio > mejor.danio) mejor = { eleccion: m.indice, danio }
+    }
+    return mejor
+}
+
 // El rival suele elegir el movimiento que más daño hace, pero a veces elige
 // otro al azar para no ser predecible.
 export function elegirMovimientoIA (pokedex, rival, jugador, azar = Math.random) {
     const disponibles = movimientosDisponibles(rival)
     if (disponibles.length === 0) return FORCEJEO
     if (azar() < 0.25) return disponibles[Math.floor(azar() * disponibles.length)].indice
-    let mejor = disponibles[0]
-    let mejorPuntaje = -1
-    for (const m of disponibles) {
-        const p = danioEstimado(rival, jugador, pokedex.movimiento(m.id))
-        if (p > mejorPuntaje) { mejor = m; mejorPuntaje = p }
-    }
-    return mejor.indice
+    return mejorMovimiento(pokedex, rival, jugador).eleccion
 }

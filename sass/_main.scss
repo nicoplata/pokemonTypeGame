@@ -36,14 +36,20 @@ main {
         display: grid;
         grid-template-columns: auto 1fr;
         column-gap: 40px;
-        row-gap: 14px;
+        row-gap: 8px;
 
         div {
             display: contents;
         }
 
         dd {
-            overflow-wrap: anywhere;
+            overflow-wrap: break-word;
+            min-width: 0;
+            line-height: 20px;
+        }
+
+        dt {
+            line-height: 20px;
         }
     }
 

@@ -3,9 +3,8 @@
 import { TEXTOS } from './datos/textos.js'
 import { IMAGENES_LOCALES, INICIALES, NIVEL_COMBATE, RIVALES, spritePokemon } from './datos/juego.js'
 import { pokemonAlAzar } from './motor/busqueda.js'
-import { FORCEJEO, elegirMovimientoIA, movimientosDisponibles, resolverTurno } from './motor/combate.js'
+import { crearCombate } from './motor/equipos.js'
 import { crearLuchador } from './motor/luchador.js'
-import { construirPasos } from './motor/mensajes.js'
 import { crearPokedex } from './motor/pokedex.js'
 import { cargarDatos } from './servicios/datos.js'
 import { guardarProgreso, leerProgreso } from './servicios/progreso.js'
@@ -14,10 +13,13 @@ import {
     SIGUIENTE, decir, decirEntrenador, escribir, limpiarOpciones, mostrarEnEntrenador, mostrarOpciones,
     mostrarTextoInmediato
 } from './ui/dialogo.js'
-import { actualizarSalud, animarGolpe, limpiarFicha, mostrarFicha, nombreTipo } from './ui/fichas.js'
+import { limpiarFicha, mostrarEquipo, mostrarFicha } from './ui/fichas.js'
 import { crearListaPokemon } from './ui/listaPokemon.js'
 import { modal } from './ui/modal.js'
 import { elegirEnPokedex, prepararSelector } from './ui/selector.js'
+import { jugarCombate } from './juego/bucleCombate.js'
+import { crearControladorHumano, crearControladorIA } from './juego/controladores.js'
+import { crearPresentador } from './juego/presentador.js'
 
 const ui = {
     trainerName: $('#trainerName'),
@@ -35,9 +37,11 @@ let listaLateral = null
 const estado = {
     pokedex: null,
     nombre: '',
-    jugador: null,
-    rival: null
+    // Equipo del jugador mientras se arma (antes de empezar el combate).
+    equipo: []
 }
+
+const TAMANIO_EQUIPO = 3
 
 // ============================================================
 //  Entrenador y Pokédex lateral
@@ -45,7 +49,7 @@ const estado = {
 
 function actualizarEntrenador () {
     ui.trainerName.textContent = estado.nombre || progreso.nombre || '-'
-    ui.trainerPokemon.textContent = estado.jugador?.nombre ?? '-'
+    ui.trainerPokemon.textContent = estado.equipo.length ? estado.equipo.map((l) => l.nombre).join(', ') : '-'
     ui.trainerRecord.textContent = `${progreso.victorias}V - ${progreso.derrotas}D`
 }
 
@@ -59,7 +63,7 @@ function habilitarPokedex (habilitada) {
 // desactiva una vez elegido el inicial.
 function prepararPokedexLateral () {
     listaLateral = crearListaPokemon($('#listaLateral'), $('#vacioLateral'), estado.pokedex.especies(), (id) => {
-        if (estado.jugador) return
+        if (estado.equipo.length) return
         mostrarFicha(ui.cards.jugador, crearLuchador(estado.pokedex, id, NIVEL_COMBATE))
     })
     ui.busquedaLateral.addEventListener('input', () => listaLateral.filtrar(ui.busquedaLateral.value))
@@ -146,65 +150,8 @@ async function elegirPokemon ({ pregunta, sugeridos, titulo, permitirAzar, exclu
     }
 }
 
-function opcionesMovimientos (luchador) {
-    if (movimientosDisponibles(luchador).length === 0) {
-        return [{ texto: 'FORCEJEO', detalle: 'SIN PP', clase: 'movimiento tipo-normal', valor: FORCEJEO }]
-    }
-    return luchador.movimientos.map((m, indice) => {
-        const mov = estado.pokedex.movimiento(m.id)
-        const potencia = mov.potencia ? `Potencia ${mov.potencia}` : 'Sin potencia'
-        const precision = mov.precision ? `precisión ${mov.precision}%` : 'nunca falla'
-        return {
-            texto: mov.nombre.toUpperCase(),
-            detalle: `${nombreTipo(mov.tipo)} ${m.pp}/${m.ppMax}`,
-            titulo: `${potencia} · ${precision} · ${mov.clase === 'fisico' ? 'físico' : 'especial'}`,
-            clase: `movimiento tipo-${mov.tipo}`,
-            deshabilitado: m.pp <= 0,
-            valor: indice
-        }
-    })
-}
-
-function nombreDeEleccion (luchador, eleccion) {
-    if (eleccion === FORCEJEO) return 'FORCEJEO'
-    return estado.pokedex.movimiento(luchador.movimientos[eleccion].id).nombre.toUpperCase()
-}
-
-function aplicarEvento (evento) {
-    const luchador = estado[evento.lado]
-    const card = ui.cards[evento.lado]
-    if (evento.tipo === 'danio' || evento.tipo === 'retroceso') {
-        actualizarSalud(card, evento.salud, luchador.saludMax)
-        if (evento.cantidad > 0) animarGolpe(card)
-    }
-}
-
-async function turno (eleccion) {
-    const { pokedex, jugador, rival } = estado
-    const eleccionRival = elegirMovimientoIA(pokedex, rival, jugador)
-    const eventos = resolverTurno(pokedex, jugador, eleccion, rival, eleccionRival)
-    for (const paso of construirPasos(eventos, { jugador, rival })) {
-        paso.eventos.forEach(aplicarEvento)
-        await decir(paso.texto)
-    }
-}
-
-// Devuelve true si gana el jugador.
-async function combate () {
-    let primerTurno = true
-    while (estado.jugador.salud > 0 && estado.rival.salud > 0) {
-        const pregunta = primerTurno ? TEXTOS.primerAtaque : TEXTOS.siguienteAtaque
-        const eleccion = await decir(pregunta, opcionesMovimientos(estado.jugador))
-        primerTurno = false
-        decirEntrenador(`¡${estado.jugador.nombre}, usa ${nombreDeEleccion(estado.jugador, eleccion)}!`)
-        await turno(eleccion)
-    }
-    return estado.jugador.salud > 0
-}
-
 function reiniciarPantalla () {
-    estado.jugador = null
-    estado.rival = null
+    estado.equipo = []
     limpiarFicha(ui.cards.jugador)
     limpiarFicha(ui.cards.rival)
     mostrarEnEntrenador()
@@ -212,11 +159,56 @@ function reiniciarPantalla () {
     actualizarEntrenador()
 }
 
-function prepararLuchador (lado, id) {
-    const luchador = { ...crearLuchador(estado.pokedex, id, NIVEL_COMBATE), lado }
-    estado[lado] = luchador
-    mostrarFicha(ui.cards[lado], luchador)
-    return luchador
+const crear = (id) => crearLuchador(estado.pokedex, id, NIVEL_COMBATE)
+
+// Sugiere Pokémon al azar distintos de los excluidos.
+function sugerencias (cantidad, excluir) {
+    const elegidos = []
+    for (let i = 0; i < cantidad; i++) elegidos.push(pokemonAlAzar(estado.pokedex.especies(), { excluir: [...excluir, ...elegidos] }))
+    return elegidos
+}
+
+function mostrarEquipoEnArmado () {
+    mostrarFicha(ui.cards.jugador, estado.equipo.at(-1))
+    mostrarEquipo(ui.cards.jugador, estado.equipo, estado.equipo.length - 1)
+    actualizarEntrenador()
+}
+
+async function armarEquipo () {
+    const idInicial = await elegirPokemon({ pregunta: TEXTOS.elegirInicial, sugeridos: INICIALES, titulo: TEXTOS.tituloInicial })
+    habilitarPokedex(false)
+    estado.equipo = [crear(idInicial)]
+    mostrarEquipoEnArmado()
+    decirEntrenador(`¡Elijo a ${estado.equipo[0].nombre}!`)
+    await decir(TEXTOS.buenaEleccion(estado.equipo[0].nombre))
+
+    await decir(TEXTOS.equipo)
+    while (estado.equipo.length < TAMANIO_EQUIPO) {
+        const ids = estado.equipo.map((l) => l.id)
+        const id = await elegirPokemon({
+            pregunta: TEXTOS.elegirCompanero(estado.equipo.length),
+            sugeridos: sugerencias(3, ids),
+            titulo: TEXTOS.tituloCompanero,
+            permitirAzar: true,
+            excluir: ids
+        })
+        estado.equipo.push(crear(id))
+        mostrarEquipoEnArmado()
+        decirEntrenador(`¡${estado.equipo.at(-1).nombre}, te elijo!`)
+    }
+    mostrarFicha(ui.cards.jugador, estado.equipo[0])
+    mostrarEquipo(ui.cards.jugador, estado.equipo, 0)
+    await decir(TEXTOS.equipoListo(estado.equipo.map((l) => l.nombre).join(', ')))
+}
+
+async function armarEquipoRival () {
+    const ids = estado.equipo.map((l) => l.id)
+    const idRival = await elegirPokemon({
+        pregunta: TEXTOS.elegirRival, sugeridos: RIVALES, titulo: TEXTOS.tituloRival, permitirAzar: true, excluir: ids
+    })
+    const equipo = [idRival, ...sugerencias(TAMANIO_EQUIPO - 1, [...ids, idRival])].map(crear)
+    decirEntrenador(`¡Quiero combatir contra ${equipo[0].nombre}!`)
+    return equipo
 }
 
 async function partida (esRevancha) {
@@ -235,26 +227,26 @@ async function partida (esRevancha) {
         await decir(TEXTOS.decision)
     }
 
-    const idInicial = await elegirPokemon({ pregunta: TEXTOS.elegirInicial, sugeridos: INICIALES, titulo: TEXTOS.tituloInicial })
-    habilitarPokedex(false)
-    const jugador = prepararLuchador('jugador', idInicial)
-    decirEntrenador(`¡Elijo a ${jugador.nombre}!`)
-    actualizarEntrenador()
-
-    await decir(TEXTOS.buenaEleccion(jugador.nombre))
+    await armarEquipo()
     await decir(TEXTOS.listo)
     await decir(TEXTOS.accion)
     await decir(TEXTOS.entrenamiento)
 
-    const idRival = await elegirPokemon({
-        pregunta: TEXTOS.elegirRival, sugeridos: RIVALES, titulo: TEXTOS.tituloRival, permitirAzar: true, excluir: [jugador.id]
-    })
-    const rival = prepararLuchador('rival', idRival)
-    decirEntrenador(`¡Quiero combatir contra ${rival.nombre}!`)
+    const equipoRival = await armarEquipoRival()
+    const combate = crearCombate(estado.equipo, equipoRival)
+    const presentador = crearPresentador(ui.cards, { ocultarEquipo: { rival: true } })
+    presentador.mostrarLado(combate, 'rival')
+    await decir(TEXTOS.equipoRival(equipoRival[0].nombre))
     await decir(TEXTOS.consejoTipos)
     mostrarEnEntrenador()
 
-    const gano = await combate()
+    const ganador = await jugarCombate({
+        pokedex: estado.pokedex,
+        combate,
+        presentador,
+        controladores: { jugador: crearControladorHumano(estado.pokedex), rival: crearControladorIA(estado.pokedex) }
+    })
+    const gano = ganador === 'jugador'
     if (gano) progreso.victorias++
     else progreso.derrotas++
     guardarProgreso(progreso)

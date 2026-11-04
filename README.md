@@ -10,7 +10,12 @@ vienen de [PokéAPI](https://pokeapi.co/).
 
 1. Abrí el juego publicado en GitHub Pages, o levantalo en tu compu (ver abajo).
 2. Ingresá tu nombre y elegí tu Pokémon y tu rival.
-3. En cada turno elegí uno de los movimientos de tu Pokémon.
+3. Armá un equipo de tres: tu inicial y dos compañeros (sugeridos, al azar o
+   buscados en la Pokédex). El rival también tiene tres.
+4. En cada turno elegí un movimiento o cambiá de Pokémon con **EQUIPO**. Los
+   cambios ocurren antes que los ataques, así que el que entra recibe el
+   golpe. Cuando un Pokémon se debilita, elegís quién sale. Gana quien deja
+   al otro equipo sin Pokémon.
 
 Cada Pokémon conoce los movimientos reales que aprende hasta su nivel
 (Arañazo, Ascuas, Látigo Cepa...), con su tipo, potencia, precisión y PP.

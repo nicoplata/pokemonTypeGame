@@ -48,19 +48,41 @@ export async function avanzar (page, ...textos) {
     }
 }
 
-// Juega desde el inicio hasta el primer turno del combate.
-export async function llegarAlCombate (page, { nombre = 'ASH', inicial, rival }) {
+// Elige un Pokémon en las opciones: por nombre, o buscándolo con "buscar:nombre".
+export async function elegirPokemon (page, eleccion) {
+    if (eleccion.startsWith('buscar:')) {
+        await botones(page).filter({ hasText: 'OTRO' }).click()
+        await page.locator('#selectorBusqueda').fill(eleccion.slice(7))
+        await page.locator('#selectorBusqueda').press('Enter')
+    } else {
+        await botones(page).filter({ hasText: eleccion.toUpperCase() }).first().click()
+    }
+}
+
+// Desde el nombre hasta tener el equipo armado (compañeros al azar).
+export async function armarEquipo (page, { nombre = 'ASH', inicial }) {
     await avanzar(page, 'Bienvenido')
     await esperarTexto(page, 'llamas')
     await page.locator('#nameInput').fill(nombre)
     await continuar(page)
     await avanzar(page, 'conocerte', 'camino', 'ligera')
     await esperarTexto(page, 'eliges')
-    await botones(page).filter({ hasText: inicial.toUpperCase() }).click()
-    await avanzar(page, 'Excelente', 'listo', 'acción', 'entrenamiento')
+    await elegirPokemon(page, inicial)
+    await avanzar(page, 'Excelente', 'nunca viaja solo')
+    for (const numero of [1, 2]) {
+        await esperarTexto(page, `número ${numero}`)
+        await elegirPokemon(page, 'AL AZAR')
+    }
+    await avanzar(page, 'equipo está listo')
+}
+
+// Juega desde el inicio hasta el primer turno del combate.
+export async function llegarAlCombate (page, { nombre = 'ASH', inicial, rival }) {
+    await armarEquipo(page, { nombre, inicial })
+    await avanzar(page, 'listo', 'acción', 'entrenamiento')
     await esperarTexto(page, 'combatir')
-    await botones(page).filter({ hasText: rival.toUpperCase() }).click()
-    await avanzar(page, 'Recuerda')
+    await elegirPokemon(page, rival)
+    await avanzar(page, 'también tendrá un equipo', 'Recuerda')
     await esperarTexto(page, 'usarás primero')
 }
 

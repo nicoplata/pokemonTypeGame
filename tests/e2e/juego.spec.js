@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test'
-import { avanzar, botones, continuar, esperarTexto, llegarAlCombate, pelear, prepararPagina, textoOak } from './utilidades.js'
+import {
+    armarEquipo, avanzar, botones, continuar, elegirPokemon, esperarTexto, llegarAlCombate, pelear, prepararPagina, textoOak
+} from './utilidades.js'
 
 test('valida el nombre y lo muestra como texto', async ({ page }) => {
     const errores = await prepararPagina(page)
@@ -25,7 +27,9 @@ test('la Pokédex lateral muestra datos y se bloquea al elegir inicial', async (
     await llegarAlCombate(page, { inicial: 'charmander', rival: 'chikorita' })
     await expect(page.locator('#listaLateral button').first()).toBeDisabled()
     await expect(page.locator('#busquedaLateral')).toBeDisabled()
-    await expect(page.locator('#trainerPokemon')).toHaveText('CHARMANDER')
+    await expect(page.locator('#trainerPokemon')).toContainText('CHARMANDER')
+    await expect(page.locator('#cardJugador .equipoIndicador li')).toHaveCount(3)
+    await expect(page.locator('#cardRival .equipoIndicador li.pokebola')).toHaveCount(3)
     await expect(page.locator('#cardJugador [data-campo="salud"]')).toHaveText('29/29')
     await expect(page.locator('#cardJugador [data-campo="tipo"]')).toHaveText('FUEGO')
     await expect(page.locator('#cardJugador [data-campo="nivel"]')).toHaveText('10')
@@ -55,15 +59,14 @@ for (const [inicial, rival, ataque] of combinaciones) {
         await pelear(page, ataque)
 
         const titulo = await page.locator('#modalTitle').textContent()
-        const saludJugador = await page.locator('#cardJugador [data-campo="salud"]').textContent()
-        const saludRival = await page.locator('#cardRival [data-campo="salud"]').textContent()
+        const debilitados = (card) => page.locator(`${card} .equipoIndicador li.debilitado`)
         if (titulo === '¡GANASTE!') {
-            expect(saludRival).toMatch(/^0\//)
-            expect(saludJugador).not.toMatch(/^0\//)
+            await expect(debilitados('#cardRival')).toHaveCount(3)
+            expect(await debilitados('#cardJugador').count()).toBeLessThan(3)
             await expect(page.locator('#trainerRecord')).toHaveText('1V - 0D')
         } else {
             expect(titulo).toBe('¡PERDISTE!')
-            expect(saludJugador).toMatch(/^0\//)
+            await expect(debilitados('#cardJugador')).toHaveCount(3)
             await expect(page.locator('#trainerRecord')).toHaveText('0V - 1D')
         }
 
@@ -145,22 +148,49 @@ test('se puede elegir cualquier Pokémon y un rival al azar', async ({ page }) =
     await expect(page.locator('#selector')).toBeHidden()
     await expect(botones(page).filter({ hasText: 'OTRO' })).toBeVisible()
 
-    await botones(page).filter({ hasText: 'OTRO' }).click()
-    await page.locator('#selectorBusqueda').fill('eevee')
-    await page.locator('#selectorBusqueda').press('Enter')
+    await elegirPokemon(page, 'buscar:eevee')
     await esperarTexto(page, 'Excelente')
     await expect(page.locator('#trainerPokemon')).toHaveText('EEVEE')
     await expect(page.locator('#cardJugador [data-campo="tipo"]')).toHaveText('NORMAL')
+    await avanzar(page, 'Excelente', 'nunca viaja solo')
 
-    await avanzar(page, 'Excelente', 'listo', 'acción', 'entrenamiento')
+    // Compañeros: uno buscado y otro sugerido.
+    await esperarTexto(page, 'número 1')
+    await elegirPokemon(page, 'buscar:pikachu')
+    await esperarTexto(page, 'número 2')
+    await expect(botones(page)).toHaveCount(5) // 3 sugeridos + al azar + otro
+    await botones(page).first().click()
+    await esperarTexto(page, 'equipo está listo')
+    await expect(page.locator('#trainerPokemon')).toContainText('EEVEE, PIKACHU, ')
+    await avanzar(page, 'equipo está listo', 'listo', 'acción', 'entrenamiento')
+
     await esperarTexto(page, 'combatir')
-    await botones(page).filter({ hasText: 'AL AZAR' }).click()
-    await esperarTexto(page, 'Recuerda')
+    await elegirPokemon(page, 'AL AZAR')
+    await esperarTexto(page, 'también tendrá un equipo')
     const rival = await page.locator('#cardRival [data-campo="nombre"]').textContent()
     expect(rival).not.toBe('-')
-    expect(rival).not.toBe('EEVEE')
-    await continuar(page)
+    expect(['EEVEE', 'PIKACHU']).not.toContain(rival)
+    await avanzar(page, 'también tendrá un equipo', 'Recuerda')
     await pelear(page)
     await expect(page.locator('#modalTitle')).toHaveText(/GANASTE|PERDISTE/)
+    expect(errores).toEqual([])
+})
+
+test('se puede cambiar de Pokémon durante el combate', async ({ page }) => {
+    const errores = await prepararPagina(page)
+    await llegarAlCombate(page, { inicial: 'charmander', rival: 'chikorita' })
+    const segundo = (await page.locator('#trainerPokemon').textContent()).split(', ')[1]
+
+    await botones(page).filter({ hasText: 'EQUIPO' }).click()
+    await esperarTexto(page, 'A quién quieres enviar')
+    await expect(botones(page)).toHaveCount(3) // 2 compañeros + volver
+    await botones(page).filter({ hasText: 'VOLVER' }).click()
+    await esperarTexto(page, 'usarás primero')
+
+    await botones(page).filter({ hasText: 'EQUIPO' }).click()
+    await botones(page).filter({ hasText: segundo }).click()
+    await esperarTexto(page, `¡Vuelve, CHARMANDER! ¡Adelante, ${segundo}!`)
+    await expect(page.locator('#cardJugador [data-campo="nombre"]')).toHaveText(segundo)
+    await expect(page.locator('#cardJugador .equipoIndicador li').nth(1)).toHaveClass(/activo/)
     expect(errores).toEqual([])
 })

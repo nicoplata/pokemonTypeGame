@@ -1,7 +1,7 @@
 // Tarjetas con los datos de cada Pokémon.
 
 import { TIPOS_ES } from '../datos/tipos.js'
-import { IMAGENES_LOCALES, imagenPokemon } from '../datos/juego.js'
+import { IMAGENES_LOCALES, imagenPokemon, spritePokemon } from '../datos/juego.js'
 import { reducirMovimiento } from './dom.js'
 
 const campo = (card, nombre) => card.querySelector(`[data-campo="${nombre}"]`)
@@ -33,6 +33,30 @@ export function actualizarSalud (card, salud, saludMax) {
     barra.classList.toggle('bajo', porcentaje <= 20)
 }
 
+// Indicador del equipo: miniaturas (o pokébolas si `ocultar`), marcando al
+// que está en el campo y a los debilitados.
+export function mostrarEquipo (card, equipo, indiceActivo, { ocultar = false } = {}) {
+    const lista = campo(card, 'equipo')
+    lista.replaceChildren(...equipo.map((luchador, indice) => {
+        const item = document.createElement('li')
+        item.classList.toggle('activo', indice === indiceActivo)
+        item.classList.toggle('debilitado', luchador.salud === 0)
+        const estadoTexto = luchador.salud === 0 ? 'debilitado' : indice === indiceActivo ? 'en el campo' : 'listo'
+        if (ocultar) {
+            item.className += ' pokebola'
+            item.title = `Pokémon ${indice + 1}: ${estadoTexto}`
+        } else {
+            const imagen = document.createElement('img')
+            imagen.src = spritePokemon(luchador.id)
+            imagen.alt = ''
+            item.append(imagen)
+            item.title = `${luchador.nombre} (${luchador.salud}/${luchador.saludMax}): ${estadoTexto}`
+        }
+        item.setAttribute('aria-label', item.title)
+        return item
+    }))
+}
+
 export function limpiarFicha (card) {
     for (const nombre of ['nombre', 'nivel', 'salud', 'tipo', 'ataque', 'defensa', 'velocidad']) {
         campo(card, nombre).textContent = '-'
@@ -44,6 +68,7 @@ export function limpiarFicha (card) {
     const barra = campo(card, 'barra')
     barra.style.width = '0%'
     barra.classList.remove('medio', 'bajo')
+    campo(card, 'equipo').replaceChildren()
 }
 
 export function animarGolpe (card) {

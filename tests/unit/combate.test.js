@@ -155,14 +155,15 @@ describe('elegirMovimientoIA', () => {
 })
 
 describe('construirPasos', () => {
-    const luchadores = { jugador: { nombre: 'CHARMANDER', lado: 'jugador' }, rival: { nombre: 'CHIKORITA', lado: 'rival' } }
+    const j = { lado: 'jugador', nombre: 'CHARMANDER' }
+    const r = { lado: 'rival', nombre: 'CHIKORITA' }
     it('arma un mensaje por acción', () => {
         const pasos = construirPasos([
-            { tipo: 'usa', lado: 'jugador', movimiento: 'Ascuas' },
-            { tipo: 'danio', lado: 'rival', cantidad: 29, multiplicador: 2, golpes: 1, salud: 61 },
-            { tipo: 'usa', lado: 'rival', movimiento: 'Placaje' },
-            { tipo: 'falla', lado: 'rival' }
-        ], luchadores)
+            { tipo: 'usa', ...j, movimiento: 'Ascuas' },
+            { tipo: 'danio', ...r, cantidad: 29, multiplicador: 2, golpes: 1, salud: 61 },
+            { tipo: 'usa', ...r, movimiento: 'Placaje' },
+            { tipo: 'falla', ...r }
+        ])
         expect(pasos.map((p) => p.texto)).toEqual([
             'CHARMANDER usó ASCUAS. ¡Es súper eficaz! Hizo 29 de daño.',
             'CHIKORITA rival usó PLACAJE. ¡Pero falló!'
@@ -170,23 +171,37 @@ describe('construirPasos', () => {
     })
     it('anuncia los golpes críticos', () => {
         const pasos = construirPasos([
-            { tipo: 'usa', lado: 'jugador', movimiento: 'Ascuas' },
-            { tipo: 'danio', lado: 'rival', cantidad: 26, multiplicador: 2, golpes: 1, criticos: 1, salud: 4 }
-        ], luchadores)
+            { tipo: 'usa', ...j, movimiento: 'Ascuas' },
+            { tipo: 'danio', ...r, cantidad: 26, multiplicador: 2, golpes: 1, criticos: 1, salud: 4 }
+        ])
         expect(pasos[0].texto).toBe('CHARMANDER usó ASCUAS. ¡Un golpe crítico! ¡Es súper eficaz! Hizo 26 de daño.')
     })
     it('anuncia golpes múltiples, inmunidad y debilitados aparte', () => {
         const pasos = construirPasos([
-            { tipo: 'usa', lado: 'jugador', movimiento: 'Doble Patada' },
-            { tipo: 'danio', lado: 'rival', cantidad: 10, multiplicador: 0.5, golpes: 2, salud: 0 },
-            { tipo: 'debilitado', lado: 'rival' },
-            { tipo: 'usa', lado: 'rival', movimiento: 'Placaje' },
-            { tipo: 'sinEfecto', lado: 'jugador' }
-        ], luchadores)
+            { tipo: 'usa', ...j, movimiento: 'Doble Patada' },
+            { tipo: 'danio', ...r, cantidad: 10, multiplicador: 0.5, golpes: 2, salud: 0 },
+            { tipo: 'debilitado', ...r },
+            { tipo: 'usa', ...r, movimiento: 'Placaje' },
+            { tipo: 'sinEfecto', ...j }
+        ])
         expect(pasos.map((p) => p.texto)).toEqual([
             'CHARMANDER usó DOBLE PATADA. No es muy eficaz... ¡Golpeó 2 veces! Hizo 10 de daño.',
             '¡CHIKORITA rival se debilitó!',
             'CHIKORITA rival usó PLACAJE. No afecta a CHARMANDER...'
+        ])
+    })
+    it('anuncia los cambios de Pokémon', () => {
+        const pasos = construirPasos([
+            { tipo: 'cambio', lado: 'jugador', nombre: 'PIKACHU', sale: 'CHARMANDER' },
+            { tipo: 'cambio', lado: 'jugador', nombre: 'EEVEE', sale: null },
+            { tipo: 'cambio', lado: 'rival', nombre: 'ONIX', sale: 'CHIKORITA' },
+            { tipo: 'cambio', lado: 'rival', nombre: 'ZUBAT', sale: null }
+        ])
+        expect(pasos.map((p) => p.texto)).toEqual([
+            '¡Vuelve, CHARMANDER! ¡Adelante, PIKACHU!',
+            '¡Adelante, EEVEE!',
+            'El rival retiró a CHIKORITA y envió a ONIX.',
+            'El rival envió a ZUBAT.'
         ])
     })
 })
