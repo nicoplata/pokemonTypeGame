@@ -7,7 +7,7 @@ tu Pokémon inicial (Bulbasaur, Charmander o Squirtle) y te enfrentás a un riva
 
 ## Cómo jugar
 
-1. Abrí `index.html` en el navegador (no hace falta servidor ni instalar nada).
+1. Abrí `index.html` en el navegador.
 2. Ingresá tu nombre y elegí tu inicial y tu rival.
 3. En cada turno elegí un ataque:
 
