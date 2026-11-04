@@ -18,7 +18,7 @@ async function archivosEn (carpeta, extension) {
 }
 
 const archivos = [
-    './', './index.html', './manifest.webmanifest', './styles/styles.css', './data/pokedex.json',
+    './', './index.html', './manifest.webmanifest', './styles/styles.css', './data/pokedex.json', './fonts/press-start-2p.woff2',
     ...await archivosEn('src', '.js'), ...await archivosEn('img', '.png')
 ]
 const ordenados = [...new Set(archivos)].sort((a, b) => a.split('/').length - b.split('/').length || a.localeCompare(b))

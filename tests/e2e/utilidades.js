@@ -20,8 +20,6 @@ export async function prepararPagina (page, { fallosDatos = 0, progreso = null }
 
     let pendientes = fallosDatos
     const imagen = await readFile('img/arrowRight.png')
-    await page.route('https://fonts.googleapis.com/**', (r) => r.fulfill({ contentType: 'text/css', body: '' }))
-    await page.route('https://fonts.gstatic.com/**', (r) => r.abort())
     await page.route('https://raw.githubusercontent.com/PokeAPI/sprites/**', (r) => r.fulfill({ contentType: 'image/png', body: imagen }))
     await page.route('**/data/pokedex.json', (r) => {
         if (pendientes > 0) {
@@ -43,6 +41,12 @@ export async function prepararPagina (page, { fallosDatos = 0, progreso = null }
 }
 
 export const textoOak = (page) => page.locator('#chatOak')
+
+// En el celular la Pokédex lateral empieza plegada.
+export async function abrirPokedex (page) {
+    const pokedex = page.locator('#pokedexList')
+    if (!(await pokedex.evaluate((d) => d.open))) await pokedex.locator('summary').click()
+}
 export const botones = (page) => page.locator('#answers button')
 export const continuar = (page) => page.locator('#answers button[aria-label="Continuar"]').click()
 

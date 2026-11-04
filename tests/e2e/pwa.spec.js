@@ -5,7 +5,7 @@ import { expect, test } from '@playwright/test'
 test.use({ serviceWorkers: 'allow' })
 
 test('se puede instalar y jugar sin conexión', async ({ page, context }) => {
-    await context.route('https://fonts.googleapis.com/**', (r) => r.fulfill({ contentType: 'text/css', body: '' }))
+    await context.route('https://raw.githubusercontent.com/**', (r) => r.abort())
     await page.goto('/')
     await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', './manifest.webmanifest')
     await expect(page.locator('#chatOak')).toContainText('Bienvenido')

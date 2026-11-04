@@ -11,6 +11,7 @@ export const nombreTipo = (tipo) => TIPOS_ES[tipo] ?? tipo.toUpperCase()
 export const nombreTipos = (tipos) => tipos.map(nombreTipo).join(' / ')
 
 export function mostrarFicha (card, luchador) {
+    card.classList.remove('vacia')
     campo(card, 'nombre').textContent = luchador.nombre
     const imagen = campo(card, 'imagen')
     imagen.dataset.local = IMAGENES_LOCALES[luchador.id] ?? ''
@@ -72,6 +73,7 @@ export function mostrarEquipo (card, equipo, indiceActivo, { ocultar = false } =
 }
 
 export function limpiarFicha (card) {
+    card.classList.add('vacia')
     for (const nombre of ['nombre', 'nivel', 'salud', 'tipo', 'estado', 'ataque', 'defensa', 'velocidad']) {
         campo(card, nombre).textContent = '-'
     }

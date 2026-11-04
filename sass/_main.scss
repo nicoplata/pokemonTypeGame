@@ -1,67 +1,68 @@
 @use 'variables' as *;
 
-main {
-    grid-area: main;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: flex-start;
+#juego {
+    grid-area: juego;
     min-width: 0;
+}
 
-    .column {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-        max-width: 100%;
-    }
+#fichas {
+    grid-area: fichas;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 
-    .card {
-        width: 440px;
-        max-width: calc(100% - 40px);
-        margin: 20px;
-        padding: 30px;
-        background-color: #ffffff;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        border: 2px solid $borde;
-        border-radius: $radio;
-    }
-
-    .cardTitle {
-        padding-bottom: 16px;
-    }
-
-    .dataList {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        column-gap: 40px;
-        row-gap: 8px;
-
-        div {
-            display: contents;
-        }
-
-        dd {
-            overflow-wrap: break-word;
-            min-width: 0;
-            line-height: 20px;
-        }
-
-        dt {
-            line-height: 20px;
-        }
-    }
-
+    // En tablet y celular las dos fichas van lado a lado si entran.
     @media (max-width: $movil) {
-        flex-direction: column;
-        align-items: stretch;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 14px;
 
         .card {
-            width: auto;
-            max-width: none;
-            margin: 16px;
-            padding: 20px 16px;
+            flex: 1 1 260px;
         }
+    }
+}
+
+.card {
+    min-width: 0;
+    padding: 24px;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid $borde;
+    border-radius: $radio;
+
+    @media (max-width: $movil) {
+        padding: 16px 14px;
+    }
+}
+
+.cardTitle {
+    padding-bottom: 14px;
+}
+
+.dataList {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 24px;
+    row-gap: 6px;
+
+    div {
+        display: contents;
+    }
+
+    dt {
+        font-size: 11px;
+        line-height: 20px;
+        color: #444444;
+    }
+
+    dd {
+        font-size: 11px;
+        line-height: 20px;
+        overflow-wrap: break-word;
+        min-width: 0;
     }
 }

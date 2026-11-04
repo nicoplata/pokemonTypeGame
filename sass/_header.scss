@@ -2,32 +2,35 @@
 
 header {
     grid-area: head;
-    margin-top: 45px;
     display: flex;
     flex-direction: row;
     align-items: center;
     flex-wrap: wrap;
-    gap: 20px;
-    padding: 0 50px;
+    gap: 12px 20px;
+    padding: 16px 4px 0;
 
     img {
-        width: 250px;
-        max-width: 60vw;
+        width: 150px;
         height: auto;
     }
 
     h1 {
-        font-size: 30px;
+        font-size: 22px;
         font-weight: normal;
+        color: $texto;
+        letter-spacing: 1px;
     }
 
     @media (max-width: $movil) {
-        margin-top: 20px;
-        padding: 0 16px;
+        padding-top: 12px;
         justify-content: center;
 
+        img {
+            width: 110px;
+        }
+
         h1 {
-            font-size: 20px;
+            font-size: 16px;
         }
     }
 }
@@ -35,19 +38,21 @@ header {
 .botonesCabecera {
     margin-left: auto;
     display: flex;
-    gap: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
 
     @media (max-width: $movil) {
         margin-left: 0;
+        justify-content: center;
     }
 }
 
 .botonCabecera {
-    padding: 10px 14px;
+    padding: 8px 12px;
     background-color: #ffffff;
     border: 2px solid $borde;
     border-radius: 10px;
-    font-size: 10px;
+    font-size: 9px;
     cursor: pointer;
 
     &:hover {
@@ -59,7 +64,7 @@ header {
     }
 
     &[aria-pressed='true'] {
-        color: #777777;
+        color: #666666;
         text-decoration: line-through;
     }
 }

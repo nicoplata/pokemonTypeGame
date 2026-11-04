@@ -1,23 +1,27 @@
 @use 'variables' as *;
 
 #actionPanel {
-    min-height: 450px;
-    justify-content: space-between;
+    align-items: stretch;
+    gap: 14px;
 
     #chat {
         width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
     }
 
     .chatArea {
         display: flex;
         flex-direction: row;
         align-items: flex-start;
-        margin-bottom: 30px;
+        gap: 14px;
 
         > img {
-            width: 100px;
-            height: 100px;
+            width: 72px;
+            height: 72px;
             flex-shrink: 0;
+            object-fit: contain;
         }
     }
 
@@ -26,34 +30,41 @@
         flex-direction: column;
         flex: 1;
         min-width: 0;
-        gap: 12px;
+        gap: 8px;
     }
 
     .speaker {
-        font-size: 12px;
+        font-size: 10px;
         color: $acento;
     }
 
     #oakChat {
-        > img {
-            margin-right: 20px;
-        }
-
         .bubble {
             cursor: pointer;
+            padding: 12px 14px;
+            background-color: #fafafa;
+            border: 2px solid $borde;
+            border-radius: 12px;
         }
 
         #chatOak {
-            min-height: 150px;
-            line-height: 26px;
+            min-height: 78px;
+            font-size: 13px;
+            line-height: 24px;
         }
     }
 
+    // El globo del entrenador solo aparece cuando tiene algo que mostrar.
     #trainerChat {
         justify-content: flex-end;
 
+        &:has(#chatTrainer:empty) {
+            display: none;
+        }
+
         > img {
-            margin-left: 20px;
+            width: 56px;
+            height: 56px;
         }
 
         .bubble {
@@ -62,24 +73,26 @@
         }
 
         #chatTrainer p {
-            line-height: 22px;
+            font-size: 12px;
+            line-height: 20px;
         }
     }
 
     #nameInput {
         width: 100%;
-        max-width: 250px;
-        height: 50px;
+        max-width: 260px;
+        height: 46px;
         padding: 0 10px;
         background-color: $fondo-suave;
         border: 2px solid $borde;
+        border-radius: 8px;
         font-family: $fuente;
-        font-size: 14px;
+        font-size: 13px;
         text-transform: uppercase;
     }
 
     #answers {
-        min-height: 75px;
+        min-height: 60px;
         width: 100%;
         display: flex;
         flex-direction: row;
@@ -89,9 +102,11 @@
     }
 
     .option {
-        width: 140px;
-        min-height: 75px;
-        padding: 8px;
+        position: relative;
+        width: calc(33.333% - 7px);
+        min-width: 110px;
+        min-height: 64px;
+        padding: 10px 8px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -101,9 +116,15 @@
         border: 2px solid $borde;
         border-radius: 10px;
         cursor: pointer;
+        transition: border-color 0.12s ease, transform 0.12s ease;
 
         &:hover:not(:disabled) {
             border-color: $texto;
+            transform: translateY(-1px);
+        }
+
+        &:active:not(:disabled) {
+            transform: translateY(1px);
         }
 
         &:disabled {
@@ -112,8 +133,23 @@
         }
 
         img {
-            width: 50px;
-            height: auto;
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+        }
+    }
+
+    // Número del atajo de teclado.
+    .option[data-atajo]::before {
+        content: attr(data-atajo);
+        position: absolute;
+        top: 4px;
+        left: 6px;
+        font-size: 8px;
+        color: #888888;
+
+        @media (hover: none) {
+            display: none;
         }
     }
 
@@ -123,64 +159,86 @@
         text-align: center;
     }
 
+    .optionDetail {
+        font-size: 9px;
+        line-height: 12px;
+        color: #555555;
+        text-align: center;
+    }
+
     .movimiento {
         width: calc(50% - 5px);
+        min-height: 72px;
         border-left: 10px solid var(--color-tipo, #{$borde});
+    }
+
+    .movimiento.deEstado {
+        border-style: dashed;
+        border-left-style: solid;
+    }
+
+    // Qué tan eficaz es el movimiento contra el rival actual.
+    .eficacia {
+        position: absolute;
+        top: 4px;
+        right: 6px;
+        padding: 1px 4px;
+        border-radius: 4px;
+        font-size: 8px;
+        color: #ffffff;
+        background-color: #777777;
+
+        &.super { background-color: $vida-baja; }
+        &.poco { background-color: #6b6b8c; }
+        &.nulo { background-color: #333333; }
     }
 
     .accionEquipo {
         width: 100%;
-        min-height: 50px;
+        min-height: 48px;
+    }
+
+    // La flecha de continuar es más angosta.
+    .continuar {
+        width: 120px;
+        min-height: 52px;
+
+        img {
+            width: 32px;
+            height: 26px;
+        }
     }
 
     .companero img {
         image-rendering: pixelated;
     }
 
-    .optionDetail {
+    .ayudaTeclado {
         font-size: 8px;
-        color: #555555;
+        line-height: 14px;
+        color: #777777;
+        text-align: center;
+
+        // En pantallas táctiles no hace falta.
+        @media (hover: none) {
+            display: none;
+        }
     }
 
     @media (max-width: $movil) {
-        min-height: 0;
-
         .chatArea > img {
-            width: 60px;
-            height: 60px;
-        }
-
-        #oakChat > img {
-            margin-right: 12px;
-        }
-
-        #trainerChat > img {
-            margin-left: 12px;
+            width: 52px;
+            height: 52px;
         }
 
         #oakChat #chatOak {
-            min-height: 120px;
+            min-height: 72px;
             font-size: 12px;
-            line-height: 22px;
+            line-height: 21px;
         }
 
         .option {
-            width: calc(33% - 7px);
-            min-width: 90px;
-        }
-
-        .movimiento {
-            width: calc(50% - 5px);
-        }
-
-        .accionEquipo {
-            width: 100%;
+            min-width: 92px;
         }
     }
-}
-
-// Los movimientos de estado llevan el borde punteado.
-#actionPanel .movimiento.deEstado {
-    border-style: dashed;
-    border-left-style: solid;
 }

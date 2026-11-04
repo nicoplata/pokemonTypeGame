@@ -137,3 +137,45 @@
         transition: none;
     }
 }
+
+// Ficha sin Pokémon: en lugar de una tabla de guiones, una indicación.
+.pokemonCard {
+    min-height: 0;
+
+    .fichaVacia {
+        display: none;
+        font-size: 10px;
+        line-height: 18px;
+        color: #666666;
+        text-align: center;
+    }
+
+    &.vacia {
+        .fichaVacia {
+            display: block;
+        }
+
+        // Sin rival todavía, su ficha no aporta nada.
+        &#cardRival {
+            display: none;
+        }
+
+        // En el celular las fichas vacías no ocupan lugar.
+        @media (max-width: $movil) {
+            display: none;
+        }
+
+        .cardTitle,
+        .healthBar,
+        .expBar,
+        .equipoIndicador,
+        .infoContainer {
+            display: none;
+        }
+    }
+
+    .imageCard {
+        width: 120px;
+        height: 120px;
+    }
+}

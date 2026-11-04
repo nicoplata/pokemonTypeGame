@@ -1,0 +1,70 @@
+@use 'variables' as *;
+
+#lateral {
+    grid-area: lateral;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    @media (max-width: $tablet) {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-start;
+
+        > * {
+            flex: 1 1 280px;
+        }
+    }
+}
+
+// Pokédex plegable: abierta en escritorio, cerrada en el celular.
+#pokedexList {
+    align-items: stretch;
+    gap: 12px;
+    padding: 18px 14px;
+    background-color: $fondo-suave;
+
+    &:not([open]) {
+        gap: 0;
+    }
+
+    .listTitle {
+        list-style: none;
+        cursor: pointer;
+        text-align: center;
+        font-size: 16px;
+
+        &::-webkit-details-marker {
+            display: none;
+        }
+
+        // Indicador de abierto o cerrado (caracteres que tiene la fuente).
+        &::after {
+            content: ' -';
+        }
+    }
+
+    &:not([open]) .listTitle::after {
+        content: ' +';
+    }
+
+    .listHint {
+        font-size: 9px;
+        line-height: 14px;
+        text-align: center;
+    }
+
+    .listaPokemon {
+        max-height: 420px;
+        overflow-y: auto;
+        background-color: #ffffff;
+        border-radius: 10px;
+    }
+
+    @media (max-width: $movil) {
+        .listaPokemon {
+            max-height: 260px;
+        }
+    }
+}

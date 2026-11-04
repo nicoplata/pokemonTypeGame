@@ -1,9 +1,9 @@
 // Service worker: permite jugar sin conexión.
 // - Archivos del juego: primero la red (para tener siempre la última versión)
 //   y, si no hay conexión, la copia guardada.
-// - Imágenes de PokéAPI y fuentes: primero la copia guardada.
+// - Imágenes de PokéAPI: primero la copia guardada.
 
-const VERSION = 'v1'
+const VERSION = 'v2'
 const CACHE_JUEGO = `juego-${VERSION}`
 const CACHE_EXTERNO = 'externo-v1'
 
@@ -13,6 +13,7 @@ const ARCHIVOS = [
     './index.html',
     './manifest.webmanifest',
     './data/pokedex.json',
+    './fonts/press-start-2p.woff2',
     './img/001bulbasaur.png',
     './img/004charmander.png',
     './img/007squirtle.png',
@@ -62,7 +63,7 @@ const ARCHIVOS = [
     './src/ui/sonido.js'
 ]
 
-const ORIGENES_EXTERNOS = ['https://raw.githubusercontent.com', 'https://fonts.googleapis.com', 'https://fonts.gstatic.com']
+const ORIGENES_EXTERNOS = ['https://raw.githubusercontent.com']
 
 self.addEventListener('install', (evento) => {
     evento.waitUntil(caches.open(CACHE_JUEGO).then((cache) => cache.addAll(ARCHIVOS)).then(() => self.skipWaiting()))

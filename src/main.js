@@ -14,8 +14,8 @@ import { guardarProgreso, leerProgreso } from './servicios/progreso.js'
 import { prepararBotonInstalar, registrarServiceWorker } from './servicios/pwa.js'
 import { $ } from './ui/dom.js'
 import {
-    SIGUIENTE, decir, decirEntrenador, escribir, limpiarOpciones, mostrarEnEntrenador, mostrarOpciones,
-    mostrarTextoInmediato
+    SIGUIENTE, alCambiarVelocidad, alternarVelocidad, decir, decirEntrenador, escribir, limpiarOpciones,
+    mostrarEnEntrenador, mostrarOpciones, mostrarTextoInmediato
 } from './ui/dialogo.js'
 import { limpiarFicha, mostrarEquipo, mostrarFicha } from './ui/fichas.js'
 import { crearListaPokemon } from './ui/listaPokemon.js'
@@ -480,7 +480,16 @@ function prepararBotonSonido () {
     })
 }
 
+function prepararBotonTexto () {
+    const boton = $('#botonTexto')
+    boton.addEventListener('click', () => alternarVelocidad())
+    alCambiarVelocidad((velocidad) => { boton.textContent = `» TEXTO: ${velocidad.nombre}` })
+}
+
 async function iniciar () {
+    // En el celular la Pokédex empieza plegada para dejar el juego a la vista.
+    if (window.matchMedia('(max-width: 760px)').matches) $('#pokedexList').open = false
+    prepararBotonTexto()
     registrarServiceWorker()
     prepararBotonInstalar($('#botonInstalar'))
     prepararBotonSonido()
