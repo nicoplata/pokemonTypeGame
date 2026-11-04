@@ -1,14 +1,15 @@
 # Pokémon Type Game
 
 Juego de combate por turnos en el navegador. El Profesor Oak te recibe, elegís
-tu Pokémon inicial (Bulbasaur, Charmander o Squirtle) y te enfrentás a un rival
-(Chikorita, Cyndaquil o Totodile). Los datos de los Pokémon y sus movimientos
+tu Pokémon y te enfrentás a un rival. Podés usar cualquiera de los 251 Pokémon
+de las dos primeras generaciones: los iniciales clásicos, cualquier otro
+buscándolo en la Pokédex (por nombre, número o tipo), o un rival al azar. Los datos de los Pokémon y sus movimientos
 vienen de [PokéAPI](https://pokeapi.co/).
 
 ## Cómo jugar
 
 1. Abrí el juego publicado en GitHub Pages, o levantalo en tu compu (ver abajo).
-2. Ingresá tu nombre y elegí tu inicial y tu rival.
+2. Ingresá tu nombre y elegí tu Pokémon y tu rival.
 3. En cada turno elegí uno de los movimientos de tu Pokémon.
 
 Cada Pokémon conoce los movimientos reales que aprende hasta su nivel

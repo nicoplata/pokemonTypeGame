@@ -20,3 +20,8 @@ export const IMAGENES_LOCALES = {
 const SPRITES = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon'
 
 export const imagenPokemon = (id) => `${SPRITES}/other/home/${id}.png`
+
+// Sprite pixelado pequeño (listas).
+export const spritePokemon = (id) => `${SPRITES}/${id}.png`
+
+export const numeroPokedex = (id) => `#${String(id).padStart(3, '0')}`

@@ -1,7 +1,8 @@
 // Flujo del juego: une la lógica de combate con la interfaz.
 
 import { TEXTOS } from './datos/textos.js'
-import { IMAGENES_LOCALES, INICIALES, NIVEL_COMBATE, RIVALES } from './datos/juego.js'
+import { IMAGENES_LOCALES, INICIALES, NIVEL_COMBATE, RIVALES, spritePokemon } from './datos/juego.js'
+import { pokemonAlAzar } from './motor/busqueda.js'
 import { FORCEJEO, elegirMovimientoIA, movimientosDisponibles, resolverTurno } from './motor/combate.js'
 import { crearLuchador } from './motor/luchador.js'
 import { construirPasos } from './motor/mensajes.js'
@@ -14,18 +15,22 @@ import {
     mostrarTextoInmediato
 } from './ui/dialogo.js'
 import { actualizarSalud, animarGolpe, limpiarFicha, mostrarFicha, nombreTipo } from './ui/fichas.js'
+import { crearListaPokemon } from './ui/listaPokemon.js'
 import { modal } from './ui/modal.js'
+import { elegirEnPokedex, prepararSelector } from './ui/selector.js'
 
 const ui = {
     trainerName: $('#trainerName'),
     trainerPokemon: $('#trainerPokemon'),
     trainerRecord: $('#trainerRecord'),
     listHint: $('#listHint'),
-    pokedexLinks: document.querySelectorAll('.pokemonLink'),
+    busquedaLateral: $('#busquedaLateral'),
     cards: { jugador: $('#cardJugador'), rival: $('#cardRival') }
 }
 
 const progreso = leerProgreso()
+
+let listaLateral = null
 
 const estado = {
     pokedex: null,
@@ -45,18 +50,20 @@ function actualizarEntrenador () {
 }
 
 function habilitarPokedex (habilitada) {
-    ui.pokedexLinks.forEach((boton) => { boton.disabled = !habilitada })
-    ui.listHint.textContent = habilitada ? 'Tocá uno para ver sus datos' : 'No disponible durante la partida'
+    ui.busquedaLateral.disabled = !habilitada
+    listaLateral?.habilitar(habilitada)
+    ui.listHint.textContent = habilitada ? 'Buscá por nombre, número o tipo' : 'No disponible durante la partida'
 }
 
-// Consultar la Pokédex solo muestra datos: no cambia tu Pokémon y se
+// La Pokédex lateral solo muestra datos: no cambia tu Pokémon y se
 // desactiva una vez elegido el inicial.
-ui.pokedexLinks.forEach((boton) => {
-    boton.addEventListener('click', () => {
-        if (!estado.pokedex || estado.jugador) return
-        mostrarFicha(ui.cards.jugador, crearLuchador(estado.pokedex, Number(boton.dataset.pokemon), NIVEL_COMBATE))
+function prepararPokedexLateral () {
+    listaLateral = crearListaPokemon($('#listaLateral'), $('#vacioLateral'), estado.pokedex.especies(), (id) => {
+        if (estado.jugador) return
+        mostrarFicha(ui.cards.jugador, crearLuchador(estado.pokedex, id, NIVEL_COMBATE))
     })
-})
+    ui.busquedaLateral.addEventListener('input', () => listaLateral.filtrar(ui.busquedaLateral.value))
+}
 
 // Carga los datos y, si falla la conexión, ofrece reintentar.
 async function cargarPokedexConReintento () {
@@ -120,10 +127,24 @@ async function pedirNombre () {
 }
 
 const opcionesPokemon = (lista) => lista.map((id) => ({
-    imagen: IMAGENES_LOCALES[id],
+    imagen: IMAGENES_LOCALES[id] ?? spritePokemon(id),
     texto: estado.pokedex.especie(id).nombre.toUpperCase(),
     valor: id
 }))
+
+const OPCION_BUSCAR = { texto: 'OTRO', detalle: 'BUSCAR', valor: 'buscar' }
+const OPCION_AZAR = { texto: 'AL AZAR', detalle: '?', valor: 'azar' }
+
+// Pregunta por un Pokémon: opciones fijas, búsqueda en la Pokédex o azar.
+async function elegirPokemon ({ pregunta, sugeridos, titulo, permitirAzar, excluir = [] }) {
+    const opciones = [...opcionesPokemon(sugeridos), ...(permitirAzar ? [OPCION_AZAR] : []), OPCION_BUSCAR]
+    for (;;) {
+        let eleccion = await decir(pregunta, opciones)
+        if (eleccion === 'buscar') eleccion = await elegirEnPokedex({ titulo, permitirAzar })
+        if (eleccion === 'azar') return pokemonAlAzar(estado.pokedex.especies(), { excluir })
+        if (eleccion !== null) return eleccion
+    }
+}
 
 function opcionesMovimientos (luchador) {
     if (movimientosDisponibles(luchador).length === 0) {
@@ -214,7 +235,7 @@ async function partida (esRevancha) {
         await decir(TEXTOS.decision)
     }
 
-    const idInicial = await decir(TEXTOS.elegirInicial, opcionesPokemon(INICIALES))
+    const idInicial = await elegirPokemon({ pregunta: TEXTOS.elegirInicial, sugeridos: INICIALES, titulo: TEXTOS.tituloInicial })
     habilitarPokedex(false)
     const jugador = prepararLuchador('jugador', idInicial)
     decirEntrenador(`¡Elijo a ${jugador.nombre}!`)
@@ -225,7 +246,9 @@ async function partida (esRevancha) {
     await decir(TEXTOS.accion)
     await decir(TEXTOS.entrenamiento)
 
-    const idRival = await decir(TEXTOS.elegirRival, opcionesPokemon(RIVALES))
+    const idRival = await elegirPokemon({
+        pregunta: TEXTOS.elegirRival, sugeridos: RIVALES, titulo: TEXTOS.tituloRival, permitirAzar: true, excluir: [jugador.id]
+    })
     const rival = prepararLuchador('rival', idRival)
     decirEntrenador(`¡Quiero combatir contra ${rival.nombre}!`)
     await decir(TEXTOS.consejoTipos)
@@ -249,6 +272,8 @@ async function partida (esRevancha) {
 async function iniciar () {
     actualizarEntrenador()
     estado.pokedex = await cargarPokedexConReintento()
+    prepararPokedexLateral()
+    prepararSelector(estado.pokedex.especies())
 
     let esRevancha = false
     for (;;) {

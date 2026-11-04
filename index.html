@@ -19,16 +19,11 @@
 
         <nav aria-label="Pokédex">
             <div id="pokedexList">
-                <h2 class="listTitle">POKéMON</h2>
-                <p class="listHint" id="listHint">Tocá uno para ver sus datos</p>
-                <ul>
-                    <li><button type="button" class="pokemonLink" data-pokemon="1">BULBASAUR</button></li>
-                    <li><button type="button" class="pokemonLink" data-pokemon="4">CHARMANDER</button></li>
-                    <li><button type="button" class="pokemonLink" data-pokemon="7">SQUIRTLE</button></li>
-                    <li><button type="button" class="pokemonLink" data-pokemon="152">CHIKORITA</button></li>
-                    <li><button type="button" class="pokemonLink" data-pokemon="155">CYNDAQUIL</button></li>
-                    <li><button type="button" class="pokemonLink" data-pokemon="158">TOTODILE</button></li>
-                </ul>
+                <h2 class="listTitle">POKéDEX</h2>
+                <label class="listHint" id="listHint" for="busquedaLateral">Buscá por nombre, número o tipo</label>
+                <input id="busquedaLateral" class="busqueda" type="search" autocomplete="off" placeholder="pikachu, 25, fuego..." disabled>
+                <p class="sinResultados" id="vacioLateral" hidden>Sin resultados</p>
+                <ul id="listaLateral" class="listaPokemon"></ul>
             </div>
         </nav>
 
@@ -100,6 +95,18 @@
             </div>
         </main>
     </div>
+
+    <dialog id="selector" aria-labelledby="selectorTitulo">
+        <h2 id="selectorTitulo"></h2>
+        <label class="srOnly" for="selectorBusqueda">Buscar Pokémon</label>
+        <input id="selectorBusqueda" class="busqueda" type="search" autocomplete="off" placeholder="Buscá por nombre, número o tipo">
+        <p class="sinResultados" id="selectorVacio" hidden>Sin resultados</p>
+        <ul id="selectorLista" class="listaPokemon grilla"></ul>
+        <div id="selectorBotones">
+            <button type="button" id="selectorAzar">AL AZAR</button>
+            <button type="button" id="selectorCancelar">CANCELAR</button>
+        </div>
+    </dialog>
 
     <dialog id="modal" aria-labelledby="modalTitle">
         <p id="modalIcon" aria-hidden="true"></p>

@@ -81,6 +81,7 @@ for (const p of tablas.pokemon) {
         base: {},
         experienciaBase: entero(p.base_experience),
         crecimiento: CRECIMIENTO[especies.get(p.id).growth_rate_id],
+        legendario: especies.get(p.id).is_legendary === '1' || especies.get(p.id).is_mythical === '1',
         evolucion: null,
         aprende: []
     }
